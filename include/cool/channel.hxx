@@ -28,7 +28,6 @@ template <typename T> struct channel_state {
   std::size_t limit = std::numeric_limits<std::size_t>::max();
 
   bool closed = false;
-  std::size_t writer_count = 0u;
 
   std::queue<T> buffer;
   std::condition_variable cv;
@@ -37,7 +36,7 @@ template <typename T> struct channel_state {
 
 template <typename T> class channel_base
 {
-protected:
+public:
   channel_base() : state_{std::make_shared<channel_state<T>>()} {}
 
   channel_base(const channel_base&) = default;
@@ -76,15 +75,19 @@ protected:
 
   auto pop() -> T
   {
-    auto l = lock();
-    cv().wait(l, [this] { return non_blocking_is_closed() || non_blocking_has_value(); });
+    auto value = [this] {
+      auto l = lock();
+      cv().wait(l, [this] { return non_blocking_is_closed() || non_blocking_has_value(); });
 
-    if (non_blocking_is_closed() && !non_blocking_has_value())
-      throw empty_closed_channel{"closed channel has no value"};
+      if (non_blocking_is_closed() && !non_blocking_has_value())
+        throw empty_closed_channel{"closed channel has no value"};
 
-    auto value = std::move(buffer().front());
-    buffer().pop();
+      auto value = std::move(buffer().front());
+      buffer().pop();
+      return value;
+    }();
 
+    cv().notify_one();
     return value;
   }
 
@@ -101,43 +104,33 @@ protected:
     return non_blocking_is_closed();
   }
 
-  auto increase_writers() -> void
-  {
-    auto l = lock();
-    non_blocking_increase_writers();
-    // XXX: should I notify all here?
-  }
-
-  auto decrease_writers() -> void
-  {
-    auto l = lock();
-    non_blocking_decrease_writers();
-    cv().notify_all();
-  }
-
   auto set_limit(std::size_t new_limit) -> void
   {
     auto l = lock();
-    limit() = new_limit;
+    state_->limit = new_limit;
     cv().notify_all();
   }
 
+  auto limit() const -> std::size_t
+  {
+    auto l = lock();
+    return state_->limit;
+  }
+
 private:
-  auto non_blocking_has_space() const -> bool { return buffer().size() < limit(); }
+  auto non_blocking_has_space() const -> bool { return buffer().size() < state_->limit; }
   auto non_blocking_has_value() const -> bool { return buffer().size() > 0; }
 
-  auto non_blocking_is_closed() const -> bool { return state_->closed || state_->writer_count == 0; }
+  auto non_blocking_is_closed() const -> bool { return state_->closed; }
   auto non_blocking_close() -> void { state_->closed = true; }
 
-  auto non_blocking_increase_writers() -> void { ++state_->writer_count; }
-  auto non_blocking_decrease_writers() -> void { --state_->writer_count; }
+  auto lock() const { return std::unique_lock<std::mutex>{mutex()}; }
 
-  auto lock() -> std::unique_lock<std::mutex> { return {mutex()}; }
-
-  auto mutex() -> std::mutex& { return state_->mut; }
+  auto mutex() const -> std::mutex& { return state_->mut; }
   auto cv() -> std::condition_variable& { return state_->cv; }
+
   auto buffer() -> std::queue<T>& { return state_->buffer; }
-  auto limit() -> std::size_t& { return state_->limit; }
+  auto buffer() const -> const std::queue<T>& { return state_->buffer; }
 
   std::shared_ptr<channel_state<T>> state_;
 };
@@ -154,17 +147,15 @@ template <typename T> class iochannel : private detail::channel_base<T>
   friend class ochannel<T>;
 
 public:
-  iochannel() { base().increase_writers(); }
+  iochannel() {}
 
-  iochannel(const iochannel& source) : detail::channel_base<T>(source.base()) { base().increase_writers; }
+  iochannel(const iochannel& source) : detail::channel_base<T>(source.base()) {}
 
   iochannel(iochannel&& source) noexcept = default;
 
   auto operator=(const iochannel& source) -> iochannel&
   {
-    base().decrease_writers();
     base() = source.base();
-    base().increase_writers();
     return *this;
   }
 
@@ -174,13 +165,14 @@ public:
     return *this;
   }
 
-  ~iochannel() noexcept { base().decrease_writers(); }
+  ~iochannel() noexcept {}
 
   using detail::channel_base<T>::close;
   using detail::channel_base<T>::is_closed;
+  using detail::channel_base<T>::limit;
   using detail::channel_base<T>::set_limit;
 
-  operator bool() const { return bad || base().is_closed(); }
+  operator bool() const { return !bad; }
 
   using detail::channel_base<T>::push;
   using detail::channel_base<T>::pop;
@@ -237,7 +229,7 @@ private:
 template <typename T> class ichannel : private detail::channel_base<T>
 {
 public:
-  ichannel(const iochannel<T>& ioc) : detail::channel_base<T>(ioc.base()) {}
+  ichannel(const iochannel<T>& ioc) : detail::channel_base<T>(ioc.base()), bad{ioc.bad} {}
 
   ichannel(const ichannel& source) : detail::channel_base<T>(source.base()) {}
 
@@ -248,8 +240,9 @@ public:
   auto operator=(ichannel&& source) noexcept -> ichannel& = default;
 
   using detail::channel_base<T>::is_closed;
+  using detail::channel_base<T>::limit;
 
-  operator bool() const { return bad || base().is_closed(); }
+  operator bool() const { return !bad; }
 
   using detail::channel_base<T>::pop;
 
@@ -277,17 +270,15 @@ private:
 template <typename T> class ochannel : private detail::channel_base<T>
 {
 public:
-  ochannel(const iochannel<T>& ioc) : detail::channel_base<T>(ioc.base()) { base().increase_writers(); }
+  ochannel(const iochannel<T>& ioc) : detail::channel_base<T>(ioc.base()), bad{ioc.bad} {}
 
-  ochannel(const ochannel& source) : detail::channel_base<T>(source.base()) { base().increase_writers; }
+  ochannel(const ochannel& source) : detail::channel_base<T>(source.base()) {}
 
   ochannel(ochannel&& source) noexcept = default;
 
   auto operator=(const ochannel& source) -> ochannel&
   {
-    base().decrease_writers();
     base() = source.base();
-    base().increase_writers();
     return *this;
   }
 
@@ -297,13 +288,14 @@ public:
     return *this;
   }
 
-  ~ochannel() noexcept { base().decrease_writers(); }
+  ~ochannel() noexcept {}
 
   using detail::channel_base<T>::close;
   using detail::channel_base<T>::is_closed;
+  using detail::channel_base<T>::limit;
   using detail::channel_base<T>::set_limit;
 
-  operator bool() const { return bad || base().is_closed(); }
+  operator bool() const { return !bad; }
 
   using detail::channel_base<T>::push;
 
