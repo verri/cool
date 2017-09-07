@@ -156,10 +156,7 @@ template <typename T> class iochannel : private detail::channel_base<T>
 public:
   iochannel() { base().increase_writers(); }
 
-  iochannel(const iochannel& source) : detail::channel_base<T>(source.base())
-  {
-    base().increase_writers;
-  }
+  iochannel(const iochannel& source) : detail::channel_base<T>(source.base()) { base().increase_writers; }
 
   iochannel(iochannel&& source) noexcept = default;
 
@@ -239,7 +236,6 @@ private:
 
 template <typename T> class ichannel : private detail::channel_base<T>
 {
-
 public:
   ichannel(const iochannel<T>& ioc) : detail::channel_base<T>(ioc.base()) {}
 
@@ -257,7 +253,7 @@ public:
 
   using detail::channel_base<T>::pop;
 
-  auto operator>>(T& value) -> ichannel<T>
+  auto operator>>(T& value) -> ichannel<T>&
   {
     if (bad)
       return *this;
@@ -265,6 +261,74 @@ public:
     try {
       value = base().pop();
     } catch (const empty_closed_channel&) {
+      bad = true;
+    }
+
+    return *this;
+  }
+
+private:
+  auto base() -> detail::channel_base<T>& { return *this; }
+  auto base() const -> const detail::channel_base<T>& { return *this; }
+
+  bool bad = false;
+};
+
+template <typename T> class ochannel : private detail::channel_base<T>
+{
+public:
+  ochannel(const iochannel<T>& ioc) : detail::channel_base<T>(ioc.base()) { base().increase_writers(); }
+
+  ochannel(const ochannel& source) : detail::channel_base<T>(source.base()) { base().increase_writers; }
+
+  ochannel(ochannel&& source) noexcept = default;
+
+  auto operator=(const ochannel& source) -> ochannel&
+  {
+    base().decrease_writers();
+    base() = source.base();
+    base().increase_writers();
+    return *this;
+  }
+
+  auto operator=(ochannel&& source) noexcept -> ochannel&
+  {
+    std::swap(base(), source.base());
+    return *this;
+  }
+
+  ~ochannel() noexcept { base().decrease_writers(); }
+
+  using detail::channel_base<T>::close;
+  using detail::channel_base<T>::is_closed;
+  using detail::channel_base<T>::set_limit;
+
+  operator bool() const { return bad || base().is_closed(); }
+
+  using detail::channel_base<T>::push;
+
+  auto operator<<(const T& value) -> ochannel<T>&
+  {
+    if (bad)
+      return *this;
+
+    try {
+      base().push(value);
+    } catch (const closed_channel&) {
+      bad = true;
+    }
+
+    return *this;
+  }
+
+  auto operator<<(T&& value) -> ochannel<T>&
+  {
+    if (bad)
+      return *this;
+
+    try {
+      base().push(std::move(value));
+    } catch (const closed_channel&) {
       bad = true;
     }
 
