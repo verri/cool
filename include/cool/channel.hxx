@@ -156,7 +156,7 @@ template <typename T> class iochannel : private detail::channel_base<T>
 public:
   iochannel() { base().increase_writers(); }
 
-  iochannel(const iochannel& source) : detail::channel_base<T>(static_cast<const detail::channel_base<T>&>(source))
+  iochannel(const iochannel& source) : detail::channel_base<T>(source.base())
   {
     base().increase_writers;
   }
@@ -166,16 +166,14 @@ public:
   auto operator=(const iochannel& source) -> iochannel&
   {
     base().decrease_writers();
-    base() = static_cast<const detail::channel_base<T>&>(source);
+    base() = source.base();
     base().increase_writers();
     return *this;
   }
 
   auto operator=(iochannel&& source) noexcept -> iochannel&
   {
-    base().decrease_writers();
-    base() = static_cast<detail::channel_base<T>&&>(source);
-    base().increase_writers();
+    std::swap(base(), source.base());
     return *this;
   }
 
@@ -217,6 +215,47 @@ public:
 
     return *this;
   }
+
+  auto operator>>(T& value) -> ichannel<T>
+  {
+    if (bad)
+      return *this;
+
+    try {
+      value = base().pop();
+    } catch (const empty_closed_channel&) {
+      bad = true;
+    }
+
+    return *this;
+  }
+
+private:
+  auto base() -> detail::channel_base<T>& { return *this; }
+  auto base() const -> const detail::channel_base<T>& { return *this; }
+
+  bool bad = false;
+};
+
+template <typename T> class ichannel : private detail::channel_base<T>
+{
+
+public:
+  ichannel(const iochannel<T>& ioc) : detail::channel_base<T>(ioc.base()) {}
+
+  ichannel(const ichannel& source) : detail::channel_base<T>(source.base()) {}
+
+  ichannel(ichannel&& source) noexcept = default;
+
+  auto operator=(const ichannel& source) -> ichannel& = default;
+
+  auto operator=(ichannel&& source) noexcept -> ichannel& = default;
+
+  using detail::channel_base<T>::is_closed;
+
+  operator bool() const { return bad || base().is_closed(); }
+
+  using detail::channel_base<T>::pop;
 
   auto operator>>(T& value) -> ichannel<T>
   {
