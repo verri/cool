@@ -149,6 +149,8 @@ template <typename T> class iochannel : private detail::channel_base<T>
 public:
   iochannel() {}
 
+  iochannel(std::size_t limit) { set_limit(limit); }
+
   iochannel(const iochannel& source) : detail::channel_base<T>(source.base()) {}
 
   iochannel(iochannel&& source) noexcept = default;

@@ -17,13 +17,13 @@ auto write(ochannel<int> ch) { (ch << 1 << 2 << 3 << 4 << 5).close(); }
 
 int main()
 {
-  auto ints = iochannel<int>();
-  ints.set_limit(3u);
+  auto ints = iochannel<int>(3u);
 
   auto total = std::async(std::launch::async, sum, ints);
+  auto thr = std::thread([total = std::move(total)]() mutable { assert(total.get() == 15); });
   std::async(std::launch::async, write, ints);
 
-  assert(total.get() == 15);
+  thr.join();
 
   return 0;
 }
