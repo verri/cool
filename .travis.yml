@@ -19,4 +19,4 @@ script:
   - make test -j2
 
 after_success:
-  - if test "$COVERAGE" == "true"; then bash <(curl -s https://codecov.io/bash) -x $(which gcov-7); fi
+  - if test "$COVERAGE" == "true"; then bash <(curl -s https://codecov.io/bash) -x $(which gcov); fi
