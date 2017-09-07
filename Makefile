@@ -1,6 +1,6 @@
 TEMPDIR := $(shell mktemp -d -u)
 ROOTDIR := $(shell pwd)
-VERSION := $(shell git describe --long --tags | sed 's/\([^-]*\)-.*/\1/g')
+# VERSION := $(shell git describe --long --tags | sed 's/\([^-]*\)-.*/\1/g')
 HEADERS := $(shell find include -name \*.[ch]pp -not -name undef\*)
 SRC := $(shell find test -name \*.[ch]pp) $(HEADERS)
 ZIP := cool-$(VERSION).zip

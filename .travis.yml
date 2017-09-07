@@ -1,0 +1,22 @@
+sudo: false
+language: cpp
+dist: trusty
+
+env:
+  - COMPILER_NAME=gcc CXX=g++ COVERAGE=true CXXFLAGS="-O0 -g --coverage"
+  - COMPILER_NAME=gcc CXX=g++ COVERAGE=false CXXFLAGS="-O2 -DNDEBUG"
+  - COMPILER_NAME=clang CXX=clang++ COVERAGE=false CXXFLAGS="-O2 -DNDEBUG -stdlib=libc++"
+
+addons:
+  apt:
+    packages:
+      - valgrind
+
+install:
+  - wget https://github.com/philsquared/Catch/releases/download/v1.10.0/catch.hpp -O include/catch.hpp
+
+script:
+  - make test -j2
+
+after_success:
+  - if test "$COVERAGE" == "true"; then bash <(curl -s https://codecov.io/bash) -x $(which gcov-7); fi
