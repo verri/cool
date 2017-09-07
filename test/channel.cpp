@@ -1,11 +1,12 @@
-#include <cool/channel.hxx>
+#include <cool/channel.hpp>
 
-#include <cassert>
 #include <future>
+
+#include <catch.hpp>
 
 using namespace cool;
 
-auto sum(ichannel<int> ch)
+int sum(ichannel<int> ch)
 {
   int x = 0, s = 0;
   while (ch >> x)
@@ -13,17 +14,15 @@ auto sum(ichannel<int> ch)
   return s;
 }
 
-auto write(ochannel<int> ch) { (ch << 1 << 2 << 3 << 4 << 5).close(); }
+void write(ochannel<int> ch) { (ch << 1 << 2 << 3 << 4 << 5).close(); }
 
-int main()
+TEST_CASE("Basic channel functionality", "[channel]")
 {
   auto ints = iochannel<int>(3u);
 
   auto total = std::async(std::launch::async, sum, ints);
-  auto thr = std::thread([total = std::move(total)]() mutable { assert(total.get() == 15); });
+  auto thr = std::thread([&total]() { CHECK(total.get() == 15); });
   std::async(std::launch::async, write, ints);
 
   thr.join();
-
-  return 0;
 }

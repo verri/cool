@@ -124,7 +124,7 @@ private:
   auto non_blocking_is_closed() const -> bool { return state_->closed; }
   auto non_blocking_close() -> void { state_->closed = true; }
 
-  auto lock() const { return std::unique_lock<std::mutex>{mutex()}; }
+  auto lock() const -> std::unique_lock<std::mutex> { return std::unique_lock<std::mutex>{mutex()}; }
 
   auto mutex() const -> std::mutex& { return state_->mut; }
   auto cv() -> std::condition_variable& { return state_->cv; }
@@ -147,7 +147,7 @@ template <typename T> class iochannel : private detail::channel_base<T>
   friend class ochannel<T>;
 
 public:
-  iochannel() {}
+  iochannel() = default;
 
   iochannel(std::size_t limit) { set_limit(limit); }
 
@@ -167,7 +167,7 @@ public:
     return *this;
   }
 
-  ~iochannel() noexcept {}
+  ~iochannel() noexcept = default;
 
   using detail::channel_base<T>::close;
   using detail::channel_base<T>::is_closed;
@@ -290,7 +290,7 @@ public:
     return *this;
   }
 
-  ~ochannel() noexcept {}
+  ~ochannel() noexcept = default;
 
   using detail::channel_base<T>::close;
   using detail::channel_base<T>::is_closed;
