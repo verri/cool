@@ -1,5 +1,5 @@
 sudo: false
-language: cpp
+language: generic
 dist: trusty
 
 env:
