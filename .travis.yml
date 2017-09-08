@@ -5,7 +5,7 @@ dist: trusty
 env:
   - COMPILER_NAME=gcc CXX=g++ COVERAGE=true CXXFLAGS="-O0 -g --coverage"
   - COMPILER_NAME=gcc CXX=g++ COVERAGE=false CXXFLAGS="-O2 -DNDEBUG"
-  - COMPILER_NAME=clang CXX=clang++ COVERAGE=false CXXFLAGS="-O2 -DNDEBUG -stdlib=libc++"
+  - COMPILER_NAME=clang CXX=clang++ COVERAGE=false CXXFLAGS="-O2 -DNDEBUG"
 
 addons:
   apt:
