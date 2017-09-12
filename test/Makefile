@@ -4,7 +4,7 @@ SRC = $(shell find . -name '*.cpp')
 OBJ := $(SRC:.cpp=.o)
 DEP := $(SRC:.cpp=.d)
 
-CXXFLAGS += -std=c++11 -Wall -Wextra -pedantic -isystem../include
+CXXFLAGS += -std=c++11 -Wall -Wextra -pedantic -I../include
 LDFLAGS += -lpthread
 
 NODEPS = clean

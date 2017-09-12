@@ -18,7 +18,7 @@ void write(ochannel<int> ch) { (ch << 1 << 2 << 3 << 4 << 5).close(); }
 
 TEST_CASE("Basic channel functionality", "[channel]")
 {
-  auto ints = iochannel<int>(3u);
+  auto ints = channel<int>(3u);
 
   auto total = std::async(std::launch::async, sum, ints);
   auto thr = std::thread([&total]() { CHECK(total.get() == 15); });
