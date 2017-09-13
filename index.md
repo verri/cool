@@ -3,9 +3,6 @@ title: Home
 layout: default
 ---
 
-Cool
-=====
-
 Common standalone C++11 utilities.
 
 Documentation
