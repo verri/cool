@@ -14,7 +14,7 @@ int sum(ichannel<int> ch)
   return s;
 }
 
-void write(ochannel<int> ch) { (ch << 1 << 2 << 3 << 4 << 5).close(); }
+void write(ochannel<int> ch) { ch << 1 << 2 << 3 << 4 << 5 << eod; }
 
 TEST_CASE("Basic channel functionality", "[channel]")
 {

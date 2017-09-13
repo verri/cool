@@ -1,6 +1,7 @@
 // Asynchronous channel implementation.
 
 #ifndef COOL_CHANNEL_HXX_INCLUDED
+/// \exclude
 #define COOL_CHANNEL_HXX_INCLUDED
 
 #include <condition_variable>
@@ -60,20 +61,38 @@ template <typename T> class ochannel;
 /// Pipes that can receive and send data among different threads.
 ///
 /// \module Channel
+///
+/// \notes After constructed, following copies refer to the same channel.
+///        Thus, assignment is disabled to keep consistency.
 template <typename T> class channel
 {
   friend class ichannel<T>;
   friend class ochannel<T>;
 
 public:
+  /// \group constructors Constructors
+  ///
+  /// Constructs a new channel
+  ///
+  /// (1) with a buffer of virtually infinity size.
+  ///
+  /// (2) with a buffer of size `buffer_size`.
   channel() : state_{std::make_shared<detail::channel_state<T>>()} {}
+
+  /// \group constructors
   channel(std::size_t buffer_size) : state_{std::make_shared<detail::channel_state<T>>(buffer_size)} {}
 
-  channel(const channel&) = default;
+  /// \exclude
+  channel(const channel&) noexcept = default;
+
+  /// \exclude
   channel(channel&&) noexcept = default;
 
-  auto operator=(const channel&) -> channel& = default;
-  auto operator=(channel&&) noexcept -> channel& = default;
+  /// \exclude
+  auto operator=(const channel&) -> channel& = delete;
+
+  /// \exclude
+  auto operator=(channel&&) noexcept -> channel& = delete;
 
   auto send(const T& value) -> void
   {
@@ -121,34 +140,43 @@ public:
     return value;
   }
 
-  auto close() -> void
+  /// Closes a channel.
+  /// \notes If the channel is already closed, nothing happens.
+  auto close() noexcept -> void
   {
     auto l = lock();
     state_->closed = true;
     state_->cv.notify_all();
   }
 
-  auto is_closed() const -> bool
+  /// Queries whether a channel is closed or not.
+  auto is_closed() const noexcept -> bool
   {
     auto l = lock();
     return non_blocking_is_closed();
   }
 
-  auto buffer_size(std::size_t size) -> void
+  /// Sets the size of the internal buffer.
+  ///
+  /// \notes If the channel has more elements buffered, the elements are kept until received.
+  /// \notes If the buffer had been full and this function is called with `size`
+  ///        greater than the previous size, blocked calls of
+  ///        [cool::channel::receive]() are signaled.
+  auto buffer_size(std::size_t size) noexcept -> void
   {
     auto l = lock();
     state_->buffer_size = size;
     state_->cv.notify_all();
   }
 
-  auto buffer_size() const -> std::size_t
+  /// Returns the size of the internal buffer.
+  auto buffer_size() const noexcept -> std::size_t
   {
     auto l = lock();
     return state_->buffer_size;
   }
 
-  operator bool() const { return !bad_; }
-
+  /// \group send Send data
   auto operator<<(const T& value) -> ochannel<T>
   {
     if (bad_)
@@ -177,7 +205,7 @@ public:
     return *this;
   }
 
-  auto operator>>(T& value) -> ichannel<T>
+  auto operator>>(T& value) noexcept -> ichannel<T>
   {
     if (bad_)
       return *this;
@@ -191,13 +219,18 @@ public:
     return *this;
   }
 
+  /// Checks whether a channel is in a bad state.
+  /// \see [cool::channel::operator<<] -
+  ///      [cool::channel::operator>>] -
+  operator bool() const noexcept { return !bad_; }
+
 private:
-  auto non_blocking_has_space() const -> bool { return state_->buffer.size() < state_->buffer_size; }
-  auto non_blocking_has_value() const -> bool { return state_->buffer.size() > 0; }
+  auto non_blocking_has_space() const noexcept -> bool { return state_->buffer.size() < state_->buffer_size; }
+  auto non_blocking_has_value() const noexcept -> bool { return state_->buffer.size() > 0; }
 
-  auto non_blocking_is_closed() const -> bool { return state_->closed; }
+  auto non_blocking_is_closed() const noexcept -> bool { return state_->closed; }
 
-  auto lock() const -> std::unique_lock<std::mutex> { return std::unique_lock<std::mutex>{state_->mutex}; }
+  auto lock() const noexcept -> std::unique_lock<std::mutex> { return std::unique_lock<std::mutex>{state_->mutex}; }
 
   std::shared_ptr<detail::channel_state<T>> state_;
   bool bad_ = false;
@@ -241,6 +274,18 @@ public:
   using channel<T>::send;
   using channel<T>::operator<<;
 };
+
+/// \exclude
+struct eod_t {
+  template <typename T> friend auto operator<<(ochannel<T> ch, eod_t) -> ochannel<T>
+  {
+    ch.close();
+    return ch;
+  }
+};
+
+/// End-of-data literal.
+constexpr eod_t eod;
 
 } // namespace cool
 
