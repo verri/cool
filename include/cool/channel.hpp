@@ -41,6 +41,7 @@ namespace detail
 {
 
 template <typename T> struct channel_state {
+  channel_state() = default;
   explicit channel_state(std::size_t buffer_size) : buffer_size{buffer_size} {}
 
   std::size_t buffer_size = std::numeric_limits<std::size_t>::max();
@@ -179,11 +180,9 @@ public:
   /// \group send Send data
   auto operator<<(const T& value) -> ochannel<T>
   {
-    if (bad_)
-      return *this;
-
     try {
       send(value);
+      bad_ = false;
     } catch (const closed_channel&) {
       bad_ = true;
     }
@@ -193,11 +192,9 @@ public:
 
   auto operator<<(T&& value) -> ochannel<T>
   {
-    if (bad_)
-      return *this;
-
     try {
       send(std::move(value));
+      bad_ = false;
     } catch (const closed_channel&) {
       bad_ = true;
     }
@@ -207,11 +204,9 @@ public:
 
   auto operator>>(T& value) noexcept -> ichannel<T>
   {
-    if (bad_)
-      return *this;
-
     try {
       value = receive();
+      bad_ = false;
     } catch (const empty_closed_channel&) {
       bad_ = true;
     }
@@ -285,6 +280,8 @@ struct eod_t {
 };
 
 /// End-of-data literal.
+///
+/// One can send `eod` through a channel to close it.
 constexpr eod_t eod;
 
 } // namespace cool
