@@ -3,175 +3,120 @@
 
 #include <cool/indices.hpp>
 
-#include <algorithm>
-#include <condition_variable>
 #include <functional>
 #include <future>
-#include <memory>
 #include <mutex>
 #include <queue>
-#include <stdexcept>
 #include <thread>
-#include <vector>
+#include <type_traits>
 
 namespace cool
 {
 
-namespace detail
+class closed_thread_pool : public std::system_error
 {
-
-template <typename T> struct infer_queue {
-  struct task_t {
-    T key;
-    std::function<void()> fn;
-
-    template <typename F> task_t(const T& key, F&& fn) : key{key}, fn{fn} {}
-
-    auto operator<(const task_t other) const -> bool { return key < other.key; }
-    auto operator()() const -> void { fn(); }
-  };
-
-  using queue_t = std::priority_queue<task_t>;
-  static constexpr auto is_priority = true;
-  static auto dequeue(const queue_t& queue) -> const task_t& { return queue.top(); }
+  using std::system_error::system_error;
 };
 
-template <> struct infer_queue<std::nullptr_t> {
-  using task_t = std::function<void()>;
-  using queue_t = std::queue<task_t>;
-  static constexpr auto is_priority = false;
-  static auto dequeue(queue_t& queue) -> task_t& { return queue.front(); }
-};
-
-} // namespace detail
-
-template <typename T = std::nullptr_t> class priority_thread_pool
+class thread_pool
 {
-  using helper_t = detail::infer_queue<T>;
-  using queue_t = typename helper_t::queue_t;
-
 public:
-  priority_thread_pool(std::size_t nthreads = 0);
-  ~priority_thread_pool();
+  explicit thread_pool(std::size_t nthreads = 0)
+  {
+    if (nthreads == 0)
+      nthreads = std::thread::hardware_concurrency();
 
-  priority_thread_pool(const priority_thread_pool&) = delete;
-  priority_thread_pool(priority_thread_pool&&) = delete;
+    for (auto _ : indices(nthreads)) {
+      (void)_;
 
-  auto operator=(const priority_thread_pool&) -> priority_thread_pool& = delete;
-  auto operator=(priority_thread_pool &&) -> priority_thread_pool& = delete;
+      workers_.emplace_back([this] {
+        while (true) {
+          auto task = std::function<void()>();
+          {
+            auto lock = std::unique_lock<std::mutex>(mutex_);
+            cv_.wait(lock, [this] { return closed_ || !tasks_.empty(); });
 
-  template <typename F, typename... Args, typename R = typename std::result_of<F(Args...)>::type>
-  auto enqueue(F&& f, Args&&... args) -> std::future<R>;
+            if (closed_ && tasks_.empty())
+              return;
 
-  template <typename F, typename... Args, typename R = typename std::result_of<F(Args...)>::type>
-  auto enqueue(const T& priority, F&& f, Args&&... args) -> std::future<R>;
+            task = std::move(tasks_.front());
+            tasks_.pop();
+          }
+          task();
+        }
+      });
+    }
+  }
 
-  auto join_all() noexcept -> void;
+  thread_pool(const thread_pool&) = delete;
+  thread_pool(thread_pool&&) = delete;
+
+  auto operator=(const thread_pool&) -> thread_pool& = delete;
+  auto operator=(thread_pool &&) -> thread_pool& = delete;
+
+  template <typename F, typename... Args>
+  auto enqueue(F&& f, Args&&... args) -> std::future<typename std::result_of<F(Args...)>::type>
+  {
+    using ptask_t = std::packaged_task<typename std::result_of<F(Args...)>::type()>;
+
+    auto task = std::make_shared<ptask_t>(std::bind(std::forward<F>(f), std::forward<Args>(args)...));
+    auto result = task->get_future();
+
+    {
+      auto lock = std::unique_lock<std::mutex>(mutex_);
+      if (closed_)
+        throw closed_thread_pool{std::make_error_code(std::errc::invalid_argument), "enqueue on closed thread_pool"};
+
+      tasks_.emplace([task] { (*task)(); });
+    }
+    cv_.notify_one();
+
+    return result;
+  }
+
+  auto join() -> void
+  {
+    close();
+    for (auto& worker : workers_)
+      worker.join();
+  }
+
+  auto detach() -> void
+  {
+    for (auto& worker : workers_)
+      worker.detach();
+  }
+
+  auto joinable() const noexcept -> bool
+  {
+    auto l = lock();
+    return workers_.back().joinable();
+  }
+
+  auto close() noexcept -> void
+  {
+    auto l = lock();
+    closed_ = true;
+    cv_.notify_all();
+  }
+
+  auto is_closed() const noexcept -> bool
+  {
+    auto l = lock();
+    return closed_;
+  }
 
 private:
-  queue_t tasks;
-  std::vector<std::thread> workers;
+  auto lock() const -> std::unique_lock<std::mutex> { return std::unique_lock<std::mutex>(mutex_); }
 
-  std::condition_variable task_condition;
-  std::mutex queue_mutex;
+  std::queue<std::function<void()>> tasks_;
+  std::vector<std::thread> workers_;
 
-  bool stopped = false;
+  std::condition_variable cv_;
+  mutable std::mutex mutex_;
+
+  bool closed_ = false;
 };
-
-template <typename T> priority_thread_pool<T>::priority_thread_pool(std::size_t nthreads)
-{
-  if (nthreads == 0)
-    nthreads = std::thread::hardware_concurrency();
-
-  for (auto _ : indices(nthreads)) {
-    (void)_;
-
-    workers.emplace_back([this] {
-      while (true) {
-        auto task = std::function<void()>();
-        {
-          auto lock = std::unique_lock<std::mutex>(queue_mutex);
-          task_condition.wait(lock, [this] { return stopped || !tasks.empty(); });
-
-          if (stopped && tasks.empty())
-            return;
-
-          task = std::move(helper_t::dequeue(tasks));
-          tasks.pop();
-        }
-        task();
-      }
-    });
-  }
-}
-
-template <typename T> priority_thread_pool<T>::~priority_thread_pool()
-{
-  {
-    auto lock = std::unique_lock<std::mutex>(queue_mutex);
-    stopped = true;
-  }
-
-  task_condition.notify_all();
-  for (auto&& worker : workers)
-    if (worker.joinable())
-      worker.join();
-}
-
-template <typename T>
-template <typename F, typename... Args, typename R>
-auto priority_thread_pool<T>::enqueue(F&& f, Args&&... args) -> std::future<R>
-{
-  static_assert(std::is_same<std::nullptr_t, T>::value, "a priority must be assigned for tasks in this pool");
-
-  auto task = std::make_shared<std::packaged_task<R()>>(std::bind(std::forward<F>(f), std::forward<Args>(args)...));
-  auto res = task->get_future();
-
-  {
-    auto lock = std::unique_lock<std::mutex>(queue_mutex);
-    if (stopped)
-      throw std::runtime_error{"enqueue on stopped priority_thread_pool"};
-
-    tasks.emplace([task] { (*task)(); });
-  }
-  task_condition.notify_one();
-
-  return res;
-}
-
-template <typename T>
-template <typename F, typename... Args, typename R>
-auto priority_thread_pool<T>::enqueue(const T& priority, F&& f, Args&&... args) -> std::future<R>
-{
-  static_assert(!std::is_same<std::nullptr_t, T>::value, "a priority cannot be assigned for tasks in this pool");
-
-  auto task = std::make_shared<std::packaged_task<R()>>(std::bind(std::forward<F>(f), std::forward<Args>(args)...));
-  auto res = task->get_future();
-
-  {
-    auto lock = std::unique_lock<std::mutex>(queue_mutex);
-    if (stopped)
-      throw std::runtime_error{"enqueue on stopped priority_thread_pool"};
-    tasks.emplace(priority, [task] { (*task)(); });
-  }
-  task_condition.notify_one();
-
-  return res;
-}
-
-template <typename T> auto priority_thread_pool<T>::join_all() noexcept -> void
-{
-  {
-    auto lock = std::unique_lock<std::mutex>(queue_mutex);
-    stopped = true;
-  }
-
-  task_condition.notify_all();
-  for (auto&& worker : workers)
-    worker.join();
-}
-
-using thread_pool = priority_thread_pool<>;
 
 } // namespace cool
 
