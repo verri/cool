@@ -64,7 +64,6 @@ template <typename T> class ochannel;
 /// \module Channel
 ///
 /// \notes After constructed, following copies refer to the same channel.
-///        Thus, assignment is disabled to keep consistency.
 template <typename T> class channel
 {
   friend class ichannel<T>;
@@ -90,11 +89,12 @@ public:
   channel(channel&&) noexcept = default;
 
   /// \exclude
-  auto operator=(const channel&) -> channel& = delete;
+  auto operator=(const channel&) -> channel& = default;
 
   /// \exclude
-  auto operator=(channel&&) noexcept -> channel& = delete;
+  auto operator=(channel&&) noexcept -> channel& = default;
 
+  /// \group send Send data into the channel
   auto send(const T& value) -> void
   {
     {
@@ -109,6 +109,7 @@ public:
     state_->cv.notify_one();
   }
 
+  /// \group send
   auto send(T&& value) -> void
   {
     {
@@ -123,6 +124,7 @@ public:
     state_->cv.notify_one();
   }
 
+  /// \group receive Receive data from the channel
   auto receive() -> T
   {
     auto value = [this] {
@@ -177,7 +179,7 @@ public:
     return state_->buffer_size;
   }
 
-  /// \group send Send data
+  /// \group send
   auto operator<<(const T& value) -> ochannel<T>
   {
     try {
@@ -190,6 +192,7 @@ public:
     return *this;
   }
 
+  /// \group send
   auto operator<<(T&& value) -> ochannel<T>
   {
     try {
@@ -202,6 +205,7 @@ public:
     return *this;
   }
 
+  /// \group receive
   auto operator>>(T& value) noexcept -> ichannel<T>
   {
     try {
@@ -214,7 +218,8 @@ public:
     return *this;
   }
 
-  /// Checks whether a channel is in a bad state.
+  /// Checks whether the last "piping" operation was successful.
+  /// \notes Before any pipe operation, returns true.
   /// \see [cool::channel::operator<<] -
   ///      [cool::channel::operator>>] -
   operator bool() const noexcept { return !bad_; }
@@ -234,9 +239,9 @@ private:
 template <typename T> class ichannel : private channel<T>
 {
 public:
-  ichannel(const channel<T>& ch) : channel<T>{ch} {}
+  ichannel(const channel<T>& ch) noexcept : channel<T>{ch} {}
 
-  ichannel(const ichannel& source) = default;
+  ichannel(const ichannel& source) noexcept = default;
   ichannel(ichannel&& source) noexcept = default;
 
   auto operator=(const ichannel& source) -> ichannel& = default;
@@ -253,9 +258,9 @@ public:
 template <typename T> class ochannel : private channel<T>
 {
 public:
-  ochannel(const channel<T>& ch) : channel<T>{ch} {}
+  ochannel(const channel<T>& ch) noexcept : channel<T>{ch} {}
 
-  ochannel(const ochannel& source) = default;
+  ochannel(const ochannel& source) noexcept = default;
   ochannel(ochannel&& source) noexcept = default;
 
   auto operator=(const ochannel& source) -> ochannel& = default;
