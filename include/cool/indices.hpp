@@ -75,9 +75,17 @@ private:
   index_iterator<T> begin_, end_;
 };
 
-template <typename T> auto indices(T value) -> index_range<T> { return {T{}, std::move(value)}; }
+template <typename T> auto indices(T value) -> typename std::enable_if<std::is_integral<T>::value, index_range<T>>::type
+{
+  return {T{}, std::move(value)};
+}
 
-template <typename T> auto indices(T begin, T end) -> index_range<T> { return {std::move(begin), std::move(end)}; }
+template <typename T, typename U>
+auto indices(T begin, U end) -> typename std::enable_if<std::is_integral<T>::value && std::is_integral<U>::value,
+                                                        index_range<typename std::common_type<T, U>::type>>::type
+{
+  return {std::move(begin), std::move(end)};
+}
 
 } // namespace cool
 
