@@ -1,10 +1,12 @@
 ---
 ---
 
-  - ## Channel
+# Project modules
+
+  - ## Module `Channel`
     
-      - [cool::channel](doc_channel.html#cool::channel-T- "cool::channel\<T\>") - Channel
+      - [`closed_channel`](doc_channel.html#standardese-cool::closed_channel) - Closed channel exception.
     
-      - [cool::closed\_channel](doc_channel.html#cool::closed_channel "cool::closed_channel") - Closed channel exception.
+      - [`empty_closed_channel`](doc_channel.html#standardese-cool::empty_closed_channel) - Empty closed channel exception.
     
-      - [cool::empty\_closed\_channel](doc_channel.html#cool::empty_closed_channel "cool::empty_closed_channel") - Empty closed channel exception.
+      - [`channel`](doc_channel.html#standardese-cool::channel\<T\>) - Channel

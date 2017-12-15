@@ -1,14 +1,21 @@
 ---
 ---
 
-# Header file `thread_pool.hpp`<a id="thread_pool.hpp"></a>
+# Header file `thread_pool.hpp`
 
 ``` cpp
+#include <cool/indices.hpp>
+
+#include <functional>
+
+#include <future>
+
+#include <mutex>
+
 namespace cool
 {
-    template <typename T = std::nullptr_t>
-    class priority_thread_pool;
-    
-    using thread_pool = priority_thread_pool<>;
+    class closed_thread_pool;
+
+    class thread_pool;
 }
 ```

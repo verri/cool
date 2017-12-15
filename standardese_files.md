@@ -1,8 +1,10 @@
 ---
 ---
 
-  - [channel.hpp](doc_channel.html#channel.hpp "channel.hpp")
+# Project files
 
-  - [indices.hpp](doc_indices.html#indices.hpp "indices.hpp")
+  - [`channel.hpp`](doc_channel.html#standardese-channel.hpp)
 
-  - [thread\_pool.hpp](doc_thread_pool.html#thread_pool.hpp "thread_pool.hpp")
+  - [`indices.hpp`](doc_indices.html#standardese-indices.hpp)
+
+  - [`thread_pool.hpp`](doc_thread_pool.html#standardese-thread_pool.hpp)

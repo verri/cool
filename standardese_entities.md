@@ -1,28 +1,28 @@
 ---
 ---
 
-  - `cool`
+# Project index
+
+  - ## Namespace `cool`
     
-      - [channel](doc_channel.html#cool::channel-T- "cool::channel\<T\>") - Channel
+      - [`channel`](doc_channel.html#standardese-cool::channel\<T\>) - Channel
     
-      - [closed\_channel](doc_channel.html#cool::closed_channel "cool::closed_channel") - Closed channel exception.
+      - [`closed_channel`](doc_channel.html#standardese-cool::closed_channel) - Closed channel exception.
     
-      - [empty\_closed\_channel](doc_channel.html#cool::empty_closed_channel "cool::empty_closed_channel") - Empty closed channel exception.
+      - [`closed_thread_pool`](doc_thread_pool.html#standardese-cool)
     
-      - [eod](doc_channel.html#cool::eod "cool::eod") - End-of-data literal.
+      - [`empty_closed_channel`](doc_channel.html#standardese-cool::empty_closed_channel) - Empty closed channel exception.
     
-      - [ichannel](doc_channel.html#channel.hpp "cool::ichannel\<T\>")
+      - [`eod`](doc_channel.html#standardese-cool::eod) - End-of-data literal.
     
-      - [index\_iterator](doc_indices.html#indices.hpp "cool::index_iterator\<T\>")
+      - [`ichannel`](doc_channel.html#standardese-cool)
     
-      - [index\_range](doc_indices.html#indices.hpp "cool::index_range\<T\>")
+      - [`index_iterator`](doc_indices.html#standardese-cool)
     
-      - [indices(T)](doc_indices.html#indices.hpp "cool::indices(T)")
+      - [`index_range`](doc_indices.html#standardese-cool)
     
-      - [indices(T, T)](doc_indices.html#indices.hpp "cool::indices(T, T)")
+      - [`indices`](doc_indices.html#standardese-cool)
     
-      - [ochannel](doc_channel.html#channel.hpp "cool::ochannel\<T\>")
+      - [`ochannel`](doc_channel.html#standardese-cool)
     
-      - [priority\_thread\_pool](doc_thread_pool.html#thread_pool.hpp "cool::priority_thread_pool\<T\>")
-    
-      - [thread\_pool](doc_thread_pool.html#thread_pool.hpp "cool::thread_pool")
+      - [`thread_pool`](doc_thread_pool.html#standardese-cool)
