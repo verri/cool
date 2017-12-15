@@ -164,7 +164,7 @@ public:
   /// \notes If the channel has more elements buffered, the elements are kept until received.
   /// \notes If the buffer had been full and this function is called with `size`
   ///        greater than the previous size, blocked calls of
-  ///        [cool::channel::receive]() are signaled.
+  ///        `receive` are signaled.
   auto buffer_size(std::size_t size) noexcept -> void
   {
     auto l = lock();
@@ -220,8 +220,8 @@ public:
 
   /// Checks whether the last "piping" operation was successful.
   /// \notes Before any pipe operation, returns true.
-  /// \see [cool::channel::operator<<] -
-  ///      [cool::channel::operator>>] -
+  /// \see `operator<<` -
+  ///      `operator>>` -
   operator bool() const noexcept { return !bad_; }
 
 private:
