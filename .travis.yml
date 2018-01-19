@@ -3,20 +3,18 @@ language: generic
 dist: trusty
 
 env:
-  - COMPILER_NAME=gcc CXX=g++ COVERAGE=true CXXFLAGS="-O0 -g --coverage"
-  - COMPILER_NAME=gcc CXX=g++ COVERAGE=false CXXFLAGS="-O2 -DNDEBUG"
-  - COMPILER_NAME=clang CXX=clang++ COVERAGE=false CXXFLAGS="-O2 -DNDEBUG"
-
-addons:
-  apt:
-    packages:
-      - valgrind
-
-install:
-  - wget https://github.com/philsquared/Catch/releases/download/v1.10.0/catch.hpp -O include/catch.hpp
+  - CXX=g++ BUILD_TYPE=Debug COVERAGE=ON
+# - CXX=g++ BUILD_TYPE=Debug COVERAGE=OFF # XXX: see https://github.com/travis-ci/travis-ci/issues/9033.
+  - CXX=g++ BUILD_TYPE=Release COVERAGE=OFF
+# - CXX=clang++ BUILD_TYPE=Debug COVERAGE=OFF # XXX: it might need newer compilers.
+  - CXX=clang++ BUILD_TYPE=Release COVERAGE=OFF
 
 script:
-  - make test -j2
+  - mkdir build
+  - cd build
+  - cmake -DCOOL_BUILD_TEST=ON -DCMAKE_CXX_COMPILER=$CXX -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DCOOL_TEST_COVERAGE=$COVERAGE ..
+  - make -j2 VERBOSE=1
+  - ctest -j2 -VV
 
 after_success:
-  - if test "$COVERAGE" == "true"; then bash <(curl -s https://codecov.io/bash) -x $(which gcov); fi
+  - if test "$COVERAGE" == "ON"; then bash <(curl -s https://codecov.io/bash) -x $(which gcov); fi

@@ -1,0 +1,19 @@
+// Copyright (c) 2018 Filipe Verri <filipeverri@gmail.com>
+
+#ifndef COOL_VERSION_HXX_INCLUDED
+/// \exclude
+#define COOL_VERSION_HXX_INCLUDED
+
+namespace cool
+{
+namespace version
+{
+
+constexpr auto major = @Cool_VERSION_MAJOR@;
+constexpr auto minor = @Cool_VERSION_MINOR@;
+constexpr auto patch = @Cool_VERSION_PATCH@;
+
+} // namespace version
+} // namespace jules
+
+#endif // COOL_VERSION_HXX_INCLUDED

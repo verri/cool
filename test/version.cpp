@@ -1,0 +1,1 @@
+#include <cool/version.hpp>
