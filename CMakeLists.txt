@@ -8,14 +8,14 @@ add_library(cool INTERFACE)
 target_compile_features(cool INTERFACE cxx_std_11)
 
 set(cool_header_files
-  include/cool/defer.hpp
-  include/cool/ccreate.hpp
-  include/cool/thread_pool.hpp
-  include/cool/channel.hpp
-  include/cool/indices.hpp)
+  ${CMAKE_CURRENT_SOURCE_DIR}/include/cool/defer.hpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/include/cool/ccreate.hpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/include/cool/thread_pool.hpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/include/cool/channel.hpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/include/cool/indices.hpp)
 
 target_sources(cool INTERFACE
-  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/${cool_header_files}>
+  $<BUILD_INTERFACE:${cool_header_files}>
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/cool/version.hpp>)
 
 target_include_directories(cool INTERFACE
@@ -35,8 +35,8 @@ include(CMakePackageConfigHelpers)
 
 file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/cool-config.cmake "
 include(\${CMAKE_CURRENT_LIST_DIR}/cool-targets.cmake)
-set(cool_LIBRARY cool)
-set(cool_LIBRARIES cool)
+set(Cool_LIBRARY cool)
+set(Cool_LIBRARIES cool)
 ")
 
 write_basic_package_version_file(

@@ -12,15 +12,15 @@ header brings a zero-configuration solution to common problems.  As a result,
 to use.
 
 Each header file contains a utility:
-- [cool/ccreate.hpp](https://github.com/verri/cool/blob/master/include/cool/ccreate.hpp): 
+- [cool/ccreate.hpp](https://github.com/verri/cool/blob/master/include/cool/ccreate.hpp):
     wrapper to deal with legacy C data types that need to be created and destroyed.
-- [cool/channel.hpp](https://github.com/verri/cool/blob/master/include/cool/channel.hpp): 
+- [cool/channel.hpp](https://github.com/verri/cool/blob/master/include/cool/channel.hpp):
     [Go-like](https://gobyexample.com/channels) channels.
-- [cool/defer.hpp](https://github.com/verri/cool/blob/master/include/cool/defer.hpp): 
+- [cool/defer.hpp](https://github.com/verri/cool/blob/master/include/cool/defer.hpp):
     deferred execution of statements.
-- [cool/indices.hpp](https://github.com/verri/cool/blob/master/include/cool/indices.hpp): 
+- [cool/indices.hpp](https://github.com/verri/cool/blob/master/include/cool/indices.hpp):
     utility to provide safer for loops.
-- [cool/thread_pool.hpp](https://github.com/verri/cool/blob/master/include/cool/thread_pool.hpp): 
+- [cool/thread_pool.hpp](https://github.com/verri/cool/blob/master/include/cool/thread_pool.hpp):
     Pool of threads with queueable jobs.
 
 # Installation
@@ -31,7 +31,7 @@ The recommended installation of the library is including it as a submodule of yo
 
 In your project, do
 ```
-$ git submodule add https://github.com/verri/cool.git external/cool 
+$ git submodule add https://github.com/verri/cool.git external/cool
 ```
 
 ## Local copy
@@ -76,7 +76,7 @@ If you installed system-wide, use
 ```
 find_package(Cool REQUIRED)
 find_package(Threads REQUIRED)
-target_link_libraries(my-target PRIVATE cool ${CMAKE_THREAD_LIBS_INIT})
+target_link_libraries(my-target PRIVATE ${Cool_LIBRARY} ${CMAKE_THREAD_LIBS_INIT})
 ```
 
 ## Compiler flags
