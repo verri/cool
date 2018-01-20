@@ -15,13 +15,15 @@ set(cool_header_files
   include/cool/indices.hpp)
 
 target_sources(cool INTERFACE
-  $<INSTALL_INTERFACE:${cool_header_files}>
-  $<INSTALL_INTERFACE:include/cool/version.hpp>)
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/${cool_header_files}>
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/cool/version.hpp>)
 
 target_include_directories(cool INTERFACE
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/>
   $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include/>)
-target_include_directories(cool SYSTEM INTERFACE $<INSTALL_INTERFACE:/include>)
+
+target_include_directories(cool SYSTEM INTERFACE
+  $<INSTALL_INTERFACE:$<INSTALL_PREFIX>/include>)
 
 option(COOL_BUILD_TEST "whether or not to build the test" OFF)
 if(COOL_BUILD_TEST)
@@ -30,6 +32,13 @@ if(COOL_BUILD_TEST)
 endif()
 
 include(CMakePackageConfigHelpers)
+
+file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/cool-config.cmake "
+include(\${CMAKE_CURRENT_LIST_DIR}/cool-targets.cmake)
+set(cool_LIBRARY cool)
+set(cool_LIBRARIES cool)
+")
+
 write_basic_package_version_file(
   ${CMAKE_CURRENT_BINARY_DIR}/cool-config-version.cmake
   VERSION ${COOL_VERSION}
@@ -37,7 +46,13 @@ write_basic_package_version_file(
 )
 
 install(TARGETS cool EXPORT cool-targets DESTINATION lib)
-install(EXPORT cool-targets FILE cool-config.cmake DESTINATION lib/cmake/cool)
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/cool-config-version.cmake DESTINATION lib/cmake/cool)
+
 install(DIRECTORY include/ DESTINATION include FILES_MATCHING PATTERN "*.hpp")
 install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/include/ DESTINATION include FILES_MATCHING PATTERN "*.hpp")
+
+install(EXPORT cool-targets DESTINATION lib/cmake/cool)
+
+install(FILES
+  ${CMAKE_CURRENT_BINARY_DIR}/cool-config.cmake
+  ${CMAKE_CURRENT_BINARY_DIR}/cool-config-version.cmake
+  DESTINATION lib/cmake/cool)
