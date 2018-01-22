@@ -85,3 +85,13 @@ You can directly specify the compiler flags:
 ```
 $ $CXX -I/path/to/cool/include -std=c++11 -pthreads ...
 ```
+
+# Documentation
+
+Reference API is not ready yet.  However, given the simplicity of the libraries,
+usage examples should suffice.
+- [cool::ccreate](https://github.com/verri/cool/blob/master/test/ccreate.cpp)
+- [cool::channel](https://github.com/verri/cool/blob/master/test/channel.cpp)
+- [cool::defer](https://github.com/verri/cool/blob/master/test/defer.cpp)
+- [cool::indices](https://github.com/verri/cool/blob/master/test/indices.cpp)
+- [cool::thread_pool](https://github.com/verri/cool/blob/master/test/thread_pool.cpp)
