@@ -1,5 +1,10 @@
 # Cool
 
+[![Build Status](https://travis-ci.org/verri/cool.svg?branch=master)](https://travis-ci.org/verri/cool)
+[![codecov](https://codecov.io/gh/verri/cool/branch/master/graph/badge.svg)](https://codecov.io/gh/verri/cool)
+[![GitHub license](https://img.shields.io/badge/license-Zlib-blue.svg)](https://raw.githubusercontent.com/verri/cool/master/license.txt)
+[![Github Releases](https://img.shields.io/github/release/verri/cool.svg)](https://github.com/verri/cool/releases)
+
 Common standalone C++11 utilities.
 
 `Cool` is a collection of self-contained headers that provide convenient
