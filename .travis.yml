@@ -1,12 +1,11 @@
-sudo: false
+sudo: true # XXX: see https://github.com/travis-ci/travis-ci/issues/9033
 language: generic
 dist: trusty
 
 env:
   - CXX=g++ BUILD_TYPE=Debug COVERAGE=ON
-# - CXX=g++ BUILD_TYPE=Debug COVERAGE=OFF # XXX: see https://github.com/travis-ci/travis-ci/issues/9033.
   - CXX=g++ BUILD_TYPE=Release COVERAGE=OFF
-# - CXX=clang++ BUILD_TYPE=Debug COVERAGE=OFF # XXX: it might need newer compilers.
+  - CXX=clang++ BUILD_TYPE=Debug COVERAGE=OFF
   - CXX=clang++ BUILD_TYPE=Release COVERAGE=OFF
 
 script:
