@@ -224,6 +224,14 @@ public:
   ///      `operator>>` -
   operator bool() const noexcept { return !bad_; }
 
+  auto operator==(const channel<T>& other) const noexcept -> bool { return state_ == other.state_; }
+  auto operator==(const ichannel<T>& other) const noexcept -> bool { return state_ == other.state_; }
+  auto operator==(const ochannel<T>& other) const noexcept -> bool { return state_ == other.state_; }
+
+  auto operator!=(const channel<T>& other) const noexcept -> bool { return state_ != other.state_; }
+  auto operator!=(const ichannel<T>& other) const noexcept -> bool { return state_ != other.state_; }
+  auto operator!=(const ochannel<T>& other) const noexcept -> bool { return state_ != other.state_; }
+
 private:
   auto non_blocking_has_space() const noexcept -> bool { return state_->buffer.size() < state_->buffer_size; }
   auto non_blocking_has_value() const noexcept -> bool { return state_->buffer.size() > 0; }
@@ -238,6 +246,8 @@ private:
 
 template <typename T> class ichannel : private channel<T>
 {
+  friend class channel<T>;
+
 public:
   ichannel(const channel<T>& ch) noexcept : channel<T>{ch} {}
 
@@ -250,6 +260,8 @@ public:
   using channel<T>::is_closed;
   using channel<T>::buffer_size;
   using channel<T>::operator bool;
+  using channel<T>::operator==;
+  using channel<T>::operator!=;
 
   using channel<T>::receive;
   using channel<T>::operator>>;
@@ -257,6 +269,8 @@ public:
 
 template <typename T> class ochannel : private channel<T>
 {
+  friend class channel<T>;
+
 public:
   ochannel(const channel<T>& ch) noexcept : channel<T>{ch} {}
 
@@ -270,6 +284,8 @@ public:
   using channel<T>::is_closed;
   using channel<T>::buffer_size;
   using channel<T>::operator bool;
+  using channel<T>::operator==;
+  using channel<T>::operator!=;
 
   using channel<T>::send;
   using channel<T>::operator<<;
