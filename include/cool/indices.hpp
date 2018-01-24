@@ -97,6 +97,14 @@ constexpr auto indices(T begin, U end) noexcept ->
   return {std::move(begin), std::move(end)};
 }
 
+template <typename T, typename U>
+RELAXED_CONSTEXPR auto closed_indices(T begin, U end) noexcept ->
+  typename std::enable_if<std::is_integral<T>::value && std::is_integral<U>::value,
+                          index_range<typename std::common_type<T, U>::type>>::type
+{
+  return {std::move(begin), std::move(++end)};
+}
+
 } // namespace cool
 
 #undef RELAXED_CONSTEXPR
