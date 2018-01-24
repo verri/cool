@@ -100,3 +100,9 @@ usage examples should suffice.
 - [cool::defer](https://github.com/verri/cool/blob/master/test/defer.cpp)
 - [cool::indices](https://github.com/verri/cool/blob/master/test/indices.cpp)
 - [cool::thread_pool](https://github.com/verri/cool/blob/master/test/thread_pool.cpp)
+
+# Acknowledgements
+
+This project is supported by **FAPESP** as part of the project *"High level data
+classification based on complex network applied to invariant pattern recognition"*
+(Grant number 2013/25876-6).
