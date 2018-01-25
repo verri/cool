@@ -13,7 +13,7 @@
     
       - [`ccreate`](doc_ccreate.html#standardese-cool)
     
-      - [`channel`](doc_channel.html#standardese-cool__channel-T-) - Channel
+      - [`channel`](doc_channel.html#standardese-cool__channel-T-) - Channels are pipes that can receive and send data among different threads.
     
       - [`closed_channel`](doc_channel.html#standardese-cool__closed_channel) - Closed channel exception.
     

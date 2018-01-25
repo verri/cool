@@ -88,25 +88,15 @@ public:
 
     operator bool() const noexcept;
 
+    //=== Compares whether or not two channels are the same. ===//
     bool operator==(channel<T> const& other) const noexcept;
-
-    bool operator==(ichannel<T> const& other) const noexcept;
-
-    bool operator==(ochannel<T> const& other) const noexcept;
-
     bool operator!=(channel<T> const& other) const noexcept;
-
-    bool operator!=(ichannel<T> const& other) const noexcept;
-
-    bool operator!=(ochannel<T> const& other) const noexcept;
 };
 ```
 
-Channel
+Channels are pipes that can receive and send data among different threads.
 
 *Notes:* After constructed, following copies refer to the same channel.
-
-Pipes that can receive and send data among different threads.
 
 ### Constructors
 
@@ -136,6 +126,14 @@ Constructs a new channel
 (4) ochannel<T> operator<<(T&& value);
 ```
 
+Sends data into the channel.
+
+*Notes:* Caller is blocked if the buffer is full.
+
+*Notes:* `send` throws [`cool::closed_channel`](doc_channel.html#standardese-cool__closed_channel) if channel is closed.
+
+*Notes:* `operator<<` sets the channel in a bad state if it is closed.
+
 -----
 
 ### Receive data from the channel
@@ -145,6 +143,14 @@ Constructs a new channel
 
 (2) ichannel<T> operator>>(T& value) noexcept;
 ```
+
+Receives data from the channel.
+
+*Notes:* Caller is blocked if no data is available.
+
+*Notes:* `receive` throws [`cool::empty_closed_channel`](doc_channel.html#standardese-cool__empty_closed_channel) if a closed channel is empty.
+
+*Notes:* `operator>>` sets the channel in a bad state if it is closed and empty.
 
 -----
 
@@ -180,7 +186,7 @@ Sets the size of the internal buffer.
 
 *Notes:* If the channel has more elements buffered, the elements are kept until received.
 
-*Notes:* If the buffer had been full and this function is called with `size` greater than the previous size, blocked calls of `receive` are signaled.
+*Notes:* If the buffer had been full and this function is called with `size` greater than the previous size, blocked calls of `send` are signaled.
 
 -----
 
@@ -200,11 +206,21 @@ Returns the size of the internal buffer.
 operator bool() const noexcept;
 ```
 
-Checks whether the last “piping” operation was successful.
+Checks if the channel is in a bad state, i.e., whether the last `<<` or `>>` operation was successful.
 
-*Notes:* Before any pipe operation, returns true.
+*Notes:* This property is not propagated to copies of the channel.
 
-*See:* `operator<<` - `operator>>` -
+*Notes:* Before any stream operation, returns true.
+
+-----
+
+### Compares whether or not two channels are the same.
+
+``` cpp
+(1) bool operator==(channel<T> const& other) const noexcept;
+
+(2) bool operator!=(channel<T> const& other) const noexcept;
+```
 
 -----
 
