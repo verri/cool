@@ -99,6 +99,7 @@ public:
   /// \notes Caller is blocked if the buffer is full.
   /// \notes `send` throws [cool::closed_channel]() if channel is closed.
   /// \notes `operator<<` sets the channel in a bad state if it is closed.
+  /// \notes `operator<<` returns a send-only channel that refers to the same channel.
   auto send(const T& value) -> void
   {
     {
@@ -135,6 +136,7 @@ public:
   /// \notes Caller is blocked if no data is available.
   /// \notes `receive` throws [cool::empty_closed_channel]() if a closed channel is empty.
   /// \notes `operator>>` sets the channel in a bad state if it is closed and empty.
+  /// \notes `operator>>` returns a receive-only channel that refers to the same channel.
   auto receive() -> T
   {
     auto value = [this] {
@@ -234,23 +236,22 @@ public:
   /// \notes Before any stream operation, returns true.
   operator bool() const noexcept { return !bad_; }
 
-  /// \group comparison Compares whether or not two channels are the same.
+  /// \group comparison Checks whether or not two channels are the same.
   auto operator==(const channel<T>& other) const noexcept -> bool { return state_ == other.state_; }
 
-  // TODO: Improve documentation to tell about ichannel and ochannel.
-  /// \exclude
+  /// \group comparison
   auto operator==(const ichannel<T>& other) const noexcept -> bool { return state_ == other.state_; }
 
-  /// \exclude
+  /// \group comparison
   auto operator==(const ochannel<T>& other) const noexcept -> bool { return state_ == other.state_; }
 
   /// \group comparison
   auto operator!=(const channel<T>& other) const noexcept -> bool { return state_ != other.state_; }
 
-  /// \exclude
+  /// \group comparison
   auto operator!=(const ichannel<T>& other) const noexcept -> bool { return state_ != other.state_; }
 
-  /// \exclude
+  /// \group comparison
   auto operator!=(const ochannel<T>& other) const noexcept -> bool { return state_ != other.state_; }
 
 private:
@@ -265,17 +266,32 @@ private:
   bool bad_ = false;
 };
 
+/// Input channel that can be constructed from a channel.
+///
+/// It refers to the same channel it is contructed from,
+/// but restrict the channel operations to receive-only.
+///
+/// \module Channel
+///
+/// \notes After constructed, following copies refer to the same channel.
 template <typename T> class ichannel : private channel<T>
 {
   friend class channel<T>;
 
 public:
+  /// \exclude
   ichannel(const channel<T>& ch) noexcept : channel<T>{ch} {}
 
+  /// \exclude
   ichannel(const ichannel& source) noexcept = default;
+
+  /// \exclude
   ichannel(ichannel&& source) noexcept = default;
 
+  /// \exclude
   auto operator=(const ichannel& source) -> ichannel& = default;
+
+  /// \exclude
   auto operator=(ichannel&& source) noexcept -> ichannel& = default;
 
   using channel<T>::is_closed;
@@ -288,17 +304,32 @@ public:
   using channel<T>::operator>>;
 };
 
+/// Output channel that can be constructed from a channel.
+///
+/// It refers to the same channel it is contructed from,
+/// but restrict the channel operations to send-only.
+///
+/// \module Channel
+///
+/// \notes After constructed, following copies refer to the same channel.
 template <typename T> class ochannel : private channel<T>
 {
   friend class channel<T>;
 
 public:
+  /// \exclude
   ochannel(const channel<T>& ch) noexcept : channel<T>{ch} {}
 
+  /// \exclude
   ochannel(const ochannel& source) noexcept = default;
+
+  /// \exclude
   ochannel(ochannel&& source) noexcept = default;
 
+  /// \exclude
   auto operator=(const ochannel& source) -> ochannel& = default;
+
+  /// \exclude
   auto operator=(ochannel&& source) noexcept -> ochannel& = default;
 
   using channel<T>::close;
