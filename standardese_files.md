@@ -3,8 +3,12 @@
 
 # Project files
 
-  - [`channel.hpp`](doc_channel.html#standardese-channel.hpp)
+  - [`ccreate.hpp`](doc_ccreate.html#standardese-ccreate-hpp)
 
-  - [`indices.hpp`](doc_indices.html#standardese-indices.hpp)
+  - [`channel.hpp`](doc_channel.html#standardese-channel-hpp)
 
-  - [`thread_pool.hpp`](doc_thread_pool.html#standardese-thread_pool.hpp)
+  - [`defer.hpp`](doc_defer.html#standardese-defer-hpp)
+
+  - [`indices.hpp`](doc_indices.html#standardese-indices-hpp)
+
+  - [`thread_pool.hpp`](doc_thread_pool.html#standardese-thread_pool-hpp)

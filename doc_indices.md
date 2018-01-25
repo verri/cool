@@ -4,8 +4,6 @@
 # Header file `indices.hpp`
 
 ``` cpp
-#include <iterator>
-
 namespace cool
 {
     template <typename T>
@@ -15,9 +13,12 @@ namespace cool
     class index_range;
 
     template <typename T>
-    typename std::enable_if<std::is_integral<T>::value, index_range<T> >::type indices(T value);
+    constexpr typename std::enable_if<std::is_integral<T>::value, index_range<T> >::type indices(T value) noexcept;
 
     template <typename T, typename U>
-    typename std::enable_if<std::is_integral<T>::value && std::is_integral<U>::value, index_range<typename std::common_type<T, U>::type> >::type indices(T begin, U end);
+    constexpr typename std::enable_if<std::is_integral<T>::value && std::is_integral<U>::value, index_range<typename std::common_type<T, U>::type> >::type indices(T begin, U end) noexcept;
+
+    template <typename T, typename U>
+    typename std::enable_if<std::is_integral<T>::value && std::is_integral<U>::value, index_range<typename std::common_type<T, U>::type> >::type closed_indices(T begin, U end) noexcept;
 }
 ```

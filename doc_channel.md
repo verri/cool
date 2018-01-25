@@ -4,14 +4,6 @@
 # Header file `channel.hpp`
 
 ``` cpp
-#include <condition_variable>
-
-#include <memory>
-
-#include <mutex>
-
-#include <queue>
-
 namespace cool
 {
     class closed_channel;
@@ -95,6 +87,18 @@ public:
     std::size_t buffer_size() const noexcept;
 
     operator bool() const noexcept;
+
+    bool operator==(channel<T> const& other) const noexcept;
+
+    bool operator==(ichannel<T> const& other) const noexcept;
+
+    bool operator==(ochannel<T> const& other) const noexcept;
+
+    bool operator!=(channel<T> const& other) const noexcept;
+
+    bool operator!=(ichannel<T> const& other) const noexcept;
+
+    bool operator!=(ochannel<T> const& other) const noexcept;
 };
 ```
 
@@ -144,7 +148,7 @@ Constructs a new channel
 
 -----
 
-### Function `close`
+### Function `cool::channel::close`
 
 ``` cpp
 void close() noexcept;
@@ -156,7 +160,7 @@ Closes a channel.
 
 -----
 
-### Function `is_closed`
+### Function `cool::channel::is_closed`
 
 ``` cpp
 bool is_closed() const noexcept;
@@ -166,7 +170,7 @@ Queries whether a channel is closed or not.
 
 -----
 
-### Function `buffer_size`
+### Function `cool::channel::buffer_size`
 
 ``` cpp
 void buffer_size(std::size_t size) noexcept;
@@ -180,7 +184,7 @@ Sets the size of the internal buffer.
 
 -----
 
-### Function `buffer_size`
+### Function `cool::channel::buffer_size`
 
 ``` cpp
 std::size_t buffer_size() const noexcept;
@@ -190,7 +194,7 @@ Returns the size of the internal buffer.
 
 -----
 
-### Conversion operator `operator bool`
+### Conversion operator `cool::channel::operator bool`
 
 ``` cpp
 operator bool() const noexcept;
@@ -200,9 +204,7 @@ Checks whether the last “piping” operation was successful.
 
 *Notes:* Before any pipe operation, returns true.
 
-#### See also
-
-  - \`operator\<\<\` - `operator>>` -
+*See:* `operator<<` - `operator>>` -
 
 -----
 
