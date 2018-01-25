@@ -57,9 +57,7 @@ template <typename T> struct channel_state {
 template <typename T> class ichannel;
 template <typename T> class ochannel;
 
-/// Channel
-///
-/// Pipes that can receive and send data among different threads.
+/// Channels are pipes that can receive and send data among different threads.
 ///
 /// \module Channel
 ///
@@ -95,6 +93,12 @@ public:
   auto operator=(channel&&) noexcept -> channel& = default;
 
   /// \group send Send data into the channel
+  ///
+  /// Sends data into the channel.
+  ///
+  /// \notes Caller is blocked if the buffer is full.
+  /// \notes `send` throws [cool::closed_channel]() if channel is closed.
+  /// \notes `operator<<` sets the channel in a bad state if it is closed.
   auto send(const T& value) -> void
   {
     {
@@ -125,6 +129,12 @@ public:
   }
 
   /// \group receive Receive data from the channel
+  ///
+  /// Receives data from the channel.
+  ///
+  /// \notes Caller is blocked if no data is available.
+  /// \notes `receive` throws [cool::empty_closed_channel]() if a closed channel is empty.
+  /// \notes `operator>>` sets the channel in a bad state if it is closed and empty.
   auto receive() -> T
   {
     auto value = [this] {
@@ -164,7 +174,7 @@ public:
   /// \notes If the channel has more elements buffered, the elements are kept until received.
   /// \notes If the buffer had been full and this function is called with `size`
   ///        greater than the previous size, blocked calls of
-  ///        `receive` are signaled.
+  ///        `send` are signaled.
   auto buffer_size(std::size_t size) noexcept -> void
   {
     auto l = lock();
@@ -218,18 +228,29 @@ public:
     return *this;
   }
 
-  /// Checks whether the last "piping" operation was successful.
-  /// \notes Before any pipe operation, returns true.
-  /// \see `operator<<` -
-  ///      `operator>>` -
+  /// Checks if the channel is in a bad state, i.e.,
+  /// whether the last `<<` or `>>` operation was successful.
+  /// \notes This property is not propagated to copies of the channel.
+  /// \notes Before any stream operation, returns true.
   operator bool() const noexcept { return !bad_; }
 
+  /// \group comparison Compares whether or not two channels are the same.
   auto operator==(const channel<T>& other) const noexcept -> bool { return state_ == other.state_; }
+
+  // TODO: Improve documentation to tell about ichannel and ochannel.
+  /// \exclude
   auto operator==(const ichannel<T>& other) const noexcept -> bool { return state_ == other.state_; }
+
+  /// \exclude
   auto operator==(const ochannel<T>& other) const noexcept -> bool { return state_ == other.state_; }
 
+  /// \group comparison
   auto operator!=(const channel<T>& other) const noexcept -> bool { return state_ != other.state_; }
+
+  /// \exclude
   auto operator!=(const ichannel<T>& other) const noexcept -> bool { return state_ != other.state_; }
+
+  /// \exclude
   auto operator!=(const ochannel<T>& other) const noexcept -> bool { return state_ != other.state_; }
 
 private:
