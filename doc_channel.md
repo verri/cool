@@ -88,9 +88,13 @@ public:
 
     operator bool() const noexcept;
 
-    //=== Compares whether or not two channels are the same. ===//
+    //=== Checks whether or not two channels are the same. ===//
     bool operator==(channel<T> const& other) const noexcept;
+    bool operator==(ichannel<T> const& other) const noexcept;
+    bool operator==(ochannel<T> const& other) const noexcept;
     bool operator!=(channel<T> const& other) const noexcept;
+    bool operator!=(ichannel<T> const& other) const noexcept;
+    bool operator!=(ochannel<T> const& other) const noexcept;
 };
 ```
 
@@ -134,6 +138,8 @@ Sends data into the channel.
 
 *Notes:* `operator<<` sets the channel in a bad state if it is closed.
 
+*Notes:* `operator<<` returns a send-only channel that refers to the same channel.
+
 -----
 
 ### Receive data from the channel
@@ -151,6 +157,8 @@ Receives data from the channel.
 *Notes:* `receive` throws [`cool::empty_closed_channel`](doc_channel.html#standardese-cool__empty_closed_channel) if a closed channel is empty.
 
 *Notes:* `operator>>` sets the channel in a bad state if it is closed and empty.
+
+*Notes:* `operator>>` returns a receive-only channel that refers to the same channel.
 
 -----
 
@@ -214,15 +222,87 @@ Checks if the channel is in a bad state, i.e., whether the last `<<` or `>>` ope
 
 -----
 
-### Compares whether or not two channels are the same.
+### Checks whether or not two channels are the same.
 
 ``` cpp
 (1) bool operator==(channel<T> const& other) const noexcept;
 
-(2) bool operator!=(channel<T> const& other) const noexcept;
+(2) bool operator==(ichannel<T> const& other) const noexcept;
+
+(3) bool operator==(ochannel<T> const& other) const noexcept;
+
+(4) bool operator!=(channel<T> const& other) const noexcept;
+
+(5) bool operator!=(ichannel<T> const& other) const noexcept;
+
+(6) bool operator!=(ochannel<T> const& other) const noexcept;
 ```
 
 -----
+
+-----
+
+### Class `cool::ichannel` \[Channel\]
+
+``` cpp
+template <typename T>
+class ichannel
+{
+public:
+    using channel<T>::is_closed;
+
+    using channel<T>::buffer_size;
+
+    using channel<T>::operatorbool;
+
+    using channel<T>::operator==;
+
+    using channel<T>::operator!=;
+
+    using channel<T>::receive;
+
+    using channel<T>::operator>>;
+};
+```
+
+Input channel that can be constructed from a channel.
+
+*Notes:* After constructed, following copies refer to the same channel.
+
+It refers to the same channel it is contructed from, but restrict the channel operations to receive-only.
+
+-----
+
+### Class `cool::ochannel` \[Channel\]
+
+``` cpp
+template <typename T>
+class ochannel
+{
+public:
+    using channel<T>::close;
+
+    using channel<T>::is_closed;
+
+    using channel<T>::buffer_size;
+
+    using channel<T>::operatorbool;
+
+    using channel<T>::operator==;
+
+    using channel<T>::operator!=;
+
+    using channel<T>::send;
+
+    using channel<T>::operator<<;
+};
+```
+
+Output channel that can be constructed from a channel.
+
+*Notes:* After constructed, following copies refer to the same channel.
+
+It refers to the same channel it is contructed from, but restrict the channel operations to send-only.
 
 -----
 

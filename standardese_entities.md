@@ -27,7 +27,7 @@
     
       - [`eod`](doc_channel.html#standardese-cool__eod) - End-of-data literal.
     
-      - [`ichannel`](doc_channel.html#standardese-cool)
+      - [`ichannel`](doc_channel.html#standardese-cool__ichannel-T-) - Input channel that can be constructed from a channel.
     
       - [`index_iterator`](doc_indices.html#standardese-cool)
     
@@ -35,6 +35,6 @@
     
       - [`indices`](doc_indices.html#standardese-cool)
     
-      - [`ochannel`](doc_channel.html#standardese-cool)
+      - [`ochannel`](doc_channel.html#standardese-cool__ochannel-T-) - Output channel that can be constructed from a channel.
     
       - [`thread_pool`](doc_thread_pool.html#standardese-cool)
