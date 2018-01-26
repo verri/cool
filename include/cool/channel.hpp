@@ -232,9 +232,9 @@ public:
 
   /// Checks if the channel is in a bad state, i.e.,
   /// whether the last `<<` or `>>` operation was successful.
-  /// \notes This property is not propagated to copies of the channel.
+  /// \notes This property propagates to copies of the channel.
   /// \notes Before any stream operation, returns true.
-  operator bool() const noexcept { return !bad_; }
+  explicit operator bool() const noexcept { return !bad_; }
 
   /// \group comparison Checks whether or not two channels are the same.
   auto operator==(const channel<T>& other) const noexcept -> bool { return state_ == other.state_; }
