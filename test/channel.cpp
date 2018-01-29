@@ -45,6 +45,16 @@ TEST_CASE("Basic channel functionality", "[channel]")
     ch3 = ch1;
     CHECK(ch1 == ch3);
     CHECK_FALSE(ch1 != ch3);
+
+    auto ch4 = std::move(ch1);
+    // ch1 is in an unspecified state.
+    ch1 = ch2;
+    // ch1 is "reinitialized"
+
+    CHECK(ch4 == ch2);
+    CHECK(ch1 == ch2);
+    CHECK_FALSE(ch4 != ch2);
+    CHECK_FALSE(ch1 != ch2);
   }
 
   // Data transmission.
@@ -69,14 +79,20 @@ TEST_CASE("Basic channel functionality", "[channel]")
 
     ichannel<int> ich = ch; // only receives
     CHECK(ich == ch);
+    CHECK(ch == ich);
     CHECK_FALSE(ich != ch);
+    CHECK_FALSE(ch != ich);
 
     ochannel<int> och = ch; // only sends
     CHECK(och == ch);
+    CHECK(ch == och);
     CHECK_FALSE(och != ch);
+    CHECK_FALSE(ch != och);
 
     CHECK(och == ich);
+    CHECK(ich == och);
     CHECK_FALSE(och != ich);
+    CHECK_FALSE(ich != och);
 
     och.send(10);
     CHECK(ich.receive() == 10);
@@ -105,8 +121,13 @@ TEST_CASE("Basic channel functionality", "[channel]")
     thr.join();
 
     // After closed, a channel cannot receive more data.
+    int x = 1;
+
     CHECK_THROWS(ch.send(1));
+    CHECK_THROWS(ch.send(x));
+
     CHECK_FALSE(ch << 1);
+    CHECK_FALSE(ch << x);
   }
 
   {
