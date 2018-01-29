@@ -86,7 +86,7 @@ public:
 
     std::size_t buffer_size() const noexcept;
 
-    operator bool() const noexcept;
+    explicit operator bool() const noexcept;
 
     //=== Checks whether or not two channels are the same. ===//
     bool operator==(channel<T> const& other) const noexcept;
@@ -211,12 +211,12 @@ Returns the size of the internal buffer.
 ### Conversion operator `cool::channel::operator bool`
 
 ``` cpp
-operator bool() const noexcept;
+explicit operator bool() const noexcept;
 ```
 
 Checks if the channel is in a bad state, i.e., whether the last `<<` or `>>` operation was successful.
 
-*Notes:* This property is not propagated to copies of the channel.
+*Notes:* This property propagates to copies of the channel.
 
 *Notes:* Before any stream operation, returns true.
 
