@@ -19,6 +19,7 @@ set(source_files
   compatibility.cpp
   defer.cpp
   channel.cpp
+  progress.cpp
   thread_pool.cpp
   indices.cpp
   version.cpp)
