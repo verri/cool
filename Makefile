@@ -10,7 +10,7 @@ format:
 
 tidy:
 	@echo Tidying source...
-	@clang-tidy $(HEADERS) -fix -fix-errors -- -std=c++11 -isystem./include
+	@clang-tidy $(HEADERS) -fix -fix-errors -- -std=c++11
 
 clean:
 	@echo Cleaning gcov files...

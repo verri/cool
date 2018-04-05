@@ -34,7 +34,7 @@ public:
     return *this;
   }
 
-  RELAXED_CONSTEXPR auto operator++(int)noexcept -> index_iterator
+  RELAXED_CONSTEXPR auto operator++(int) noexcept -> index_iterator
   {
     auto copy = *this;
     ++(*this);
@@ -47,7 +47,7 @@ public:
     return *this;
   }
 
-  RELAXED_CONSTEXPR auto operator--(int)noexcept -> index_iterator
+  RELAXED_CONSTEXPR auto operator--(int) noexcept -> index_iterator
   {
     auto copy = *this;
     --(*this);
