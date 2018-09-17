@@ -10,6 +10,14 @@
 #include <thread>
 #include <type_traits>
 
+#if __cplusplus >= 201703L
+/// \exclude
+#define RESULT_OF_T(F, ...) std::invoke_result_t<F, __VA_ARGS__>
+#else
+/// \exclude
+#define RESULT_OF_T(F, ...) typename std::result_of<F(__VA_ARGS__)>::type
+#endif
+
 namespace cool
 {
 
@@ -54,10 +62,9 @@ public:
   auto operator=(const thread_pool&) -> thread_pool& = delete;
   auto operator=(thread_pool &&) -> thread_pool& = delete;
 
-  template <typename F, typename... Args>
-  auto enqueue(F&& f, Args&&... args) -> std::future<typename std::result_of<F(Args...)>::type>
+  template <typename F, typename... Args> auto enqueue(F&& f, Args&&... args) -> std::future<RESULT_OF_T(F&&, Args&&...)>
   {
-    using ptask_t = std::packaged_task<typename std::result_of<F(Args...)>::type()>;
+    using ptask_t = std::packaged_task<RESULT_OF_T(F&&, Args && ...)()>;
 
     auto task = std::make_shared<ptask_t>(std::bind(std::forward<F>(f), std::forward<Args>(args)...));
     auto result = task->get_future();
@@ -119,5 +126,7 @@ private:
 };
 
 } // namespace cool
+
+#undef RESULT_OF_T
 
 #endif // COOL_THREAD_POOL_HPP_INCLUDED
