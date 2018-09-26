@@ -160,4 +160,11 @@ TEST_CASE("Basic channel functionality", "[channel]")
     CHECK(x == 10);
     CHECK_FALSE(ch);
   }
+
+  {
+    auto ch = channel<int>();
+    CHECK(ch.wait_for(std::chrono::milliseconds{1}, [](int) { CHECK(false); }) == std::cv_status::timeout);
+    ch << 1;
+    CHECK(ch.wait_for(std::chrono::milliseconds{1}, [](int i) { CHECK(i == 1); }) == std::cv_status::no_timeout);
+  }
 }

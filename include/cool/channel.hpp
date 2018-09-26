@@ -8,6 +8,15 @@
 #include <memory>
 #include <mutex>
 #include <queue>
+#include <type_traits>
+
+#if __cplusplus >= 201703L
+/// \exclude
+#define RESULT_OF_T(F, ...) std::invoke_result_t<F, __VA_ARGS__>
+#else
+/// \exclude
+#define RESULT_OF_T(F, ...) typename std::result_of<F(__VA_ARGS__)>::type
+#endif
 
 namespace cool
 {
@@ -153,6 +162,37 @@ public:
 
     state_->cv.notify_one();
     return value;
+  }
+
+  /// \group receive
+  template <typename Rep, typename Period, typename F>
+  auto wait_for(const std::chrono::duration<Rep, Period>& rel_time, F f) ->
+    typename std::enable_if<std::is_same<void, RESULT_OF_T(F, T)>::value, std::cv_status>::type
+  {
+    return wait_until(std::chrono::steady_clock::now() + rel_time, std::move(f));
+  }
+
+  /// \group receive
+  template <typename Rep, typename Period, typename F>
+  auto wait_until(const std::chrono::time_point<Rep, Period>& time, F f) ->
+    typename std::enable_if<std::is_same<void, RESULT_OF_T(F, T)>::value, std::cv_status>::type
+  {
+    {
+      auto l = lock();
+      state_->cv.wait_until(l, time, [this] { return non_blocking_is_closed() || non_blocking_has_value(); });
+
+      if (non_blocking_is_closed() && !non_blocking_has_value())
+        throw empty_closed_channel{"closed channel has no value"};
+
+      if (!non_blocking_has_value())
+        return std::cv_status::timeout;
+
+      f(std::move(state_->buffer.front()));
+      state_->buffer.pop();
+    }
+
+    state_->cv.notify_one();
+    return std::cv_status::no_timeout;
   }
 
   /// Closes a channel.
@@ -358,5 +398,7 @@ struct eod_t {
 constexpr eod_t eod;
 
 } // namespace cool
+
+#undef RESULT_OF_T
 
 #endif // COOL_CHANNEL_HXX_INCLUDED
