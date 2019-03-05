@@ -82,11 +82,20 @@ public:
   template <auto W> constexpr auto operator[](detail::enum_key_t<W>) const noexcept -> const T& { return values[to_index<W>()]; }
 
   // Runtime construction and access.
-  constexpr enum_map(std::initializer_list<std::pair<key_type, T>> values)
+  constexpr enum_map(std::initializer_list<value_type> values)
   {
     for (const auto& [i, value] : values) {
       this->values.at(to_index(i)) = value;
     }
+  }
+
+  template <typename InputIt> constexpr enum_map(InputIt begin, InputIt end)
+  {
+    static_assert(std::is_same_v<key_type, typename InputIt::value_type::first_type>);
+    static_assert(std::is_assignable_v<mapped_type, typename InputIt::value_type::second_type>);
+
+    for (; begin != end; ++begin)
+      values.at(to_index(begin.first)) = begin.second;
   }
 
   constexpr auto at(key_type i) -> T& { return values.at(to_index(i)); }
