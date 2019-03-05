@@ -81,6 +81,10 @@ public:
 
   template <auto W> constexpr auto operator[](detail::enum_key_t<W>) const noexcept -> const T& { return values[to_index<W>()]; }
 
+  template <auto W> constexpr auto find(detail::enum_key_t<W>) noexcept -> iterator;
+
+  template <auto W> constexpr auto find(detail::enum_key_t<W>) const noexcept -> const_iterator;
+
   // Runtime construction and access.
   constexpr enum_map(std::initializer_list<value_type> values)
   {
@@ -106,25 +110,46 @@ public:
 
   constexpr auto operator[](key_type i) const noexcept -> const T& { return values[to_index(i)]; }
 
+  constexpr auto find(key_type i) -> iterator;
+  constexpr auto find(key_type i) const -> const_iterator;
+
+  // Capacity
+  constexpr auto empty() const noexcept -> bool { return false; }
+  constexpr auto size() const noexcept -> size_type { return order; }
+  constexpr auto max_size() const noexcept -> size_type { return order; }
+
+  // Iterators
+  constexpr auto begin() noexcept -> iterator;
+  constexpr auto cbegin() const noexcept -> const_iterator;
+
+  constexpr auto end() noexcept -> iterator;
+  constexpr auto cend() const noexcept -> const_iterator;
+
+  constexpr auto rbegin() noexcept -> reverse_iterator;
+  constexpr auto crbegin() const noexcept -> const_reverse_iterator;
+
+  constexpr auto rend() noexcept -> reverse_iterator;
+  constexpr auto crend() const noexcept -> const_reverse_iterator;
+
 private:
   std::array<T, order> values;
 
-  static constexpr auto to_index(key_type W) -> std::size_t
+  static constexpr auto to_index(key_type W) -> size_type
   {
     if (W == V)
       return 0;
 
-    std::size_t i = 1u;
+    size_type i = 1u;
     return ((W == Vs ? true : (++i, false)) || ...), i;
   }
 
-  template <key_type W> static constexpr auto to_index() -> std::size_t
+  template <key_type W> static constexpr auto to_index() -> size_type
   {
     static_assert(to_index(W) < order);
     return to_index(W);
   }
 
-  template <key_type W> static constexpr std::size_t index = to_index<W>();
+  template <key_type W> static constexpr size_type index = to_index<W>();
 };
 
 } // namespace cool
