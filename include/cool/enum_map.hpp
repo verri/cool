@@ -9,6 +9,7 @@
 #else
 
 #include <array>
+#include <iterator>
 #include <type_traits>
 
 namespace cool
@@ -19,8 +20,7 @@ namespace detail
 {
 template <typename, auto> struct enum_value_t;
 
-template <auto V> struct enum_key_t
-{
+template <auto V> struct enum_key_t {
   static_assert(std::is_enum_v<decltype(V)>);
 
   template <typename T> constexpr auto operator()(T value) const -> enum_value_t<T, V>
@@ -37,14 +37,30 @@ template <typename T, auto V> struct enum_value_t : enum_key_t<V> {
 
 template <auto V> constexpr detail::enum_key_t<V> key;
 
+template <typename T, auto V, auto... Vs> class enum_map_iterator;
+
 template <typename T, auto V, auto... Vs> class enum_map
 {
 public:
-  using index_type = decltype(V);
+  using key_type = decltype(V);
+  using mapped_type = T;
+  using value_type = std::pair<key_type, mapped_type>;
+
   static constexpr auto order = sizeof...(Vs) + 1u;
 
-  static_assert(std::is_enum_v<index_type>);
-  static_assert(std::conjunction_v<std::is_same<index_type, decltype(Vs)>...>);
+  using storage_type = std::array<mapped_type, order>;
+  using size_type = typename storage_type::size_type;
+  using difference_type = typename storage_type::difference_type;
+
+  using iterator = enum_map_iterator<T, V, Vs...>;
+  using const_iterator = enum_map_iterator<const T, V, Vs...>;
+  using reverse_iterator = std::reverse_iterator<iterator>;
+  using const_reverse_iterator = std::reverse_iterator<const_iterator>;
+
+  static constexpr std::array<key_type, order> keys = {V, Vs...};
+
+  static_assert(std::is_enum_v<key_type>);
+  static_assert(std::conjunction_v<std::is_same<key_type, decltype(Vs)>...>);
 
   constexpr enum_map() = default;
 
@@ -55,6 +71,8 @@ public:
     static_assert(std::conjunction_v<std::is_same<detail::enum_value_t<T, Vs>, Ws>...>);
   }
 
+  constexpr explicit enum_map(std::array<T, order> values) : values(std::move(values)) {}
+
   template <auto W> constexpr auto at(detail::enum_key_t<W>) noexcept -> T& { return values[to_index<W>()]; }
 
   template <auto W> constexpr auto at(detail::enum_key_t<W>) const noexcept -> const T& { return values[to_index<W>()]; }
@@ -64,25 +82,25 @@ public:
   template <auto W> constexpr auto operator[](detail::enum_key_t<W>) const noexcept -> const T& { return values[to_index<W>()]; }
 
   // Runtime construction and access.
-  constexpr enum_map(std::initializer_list<std::pair<index_type, T>> values)
+  constexpr enum_map(std::initializer_list<std::pair<key_type, T>> values)
   {
     for (const auto& [i, value] : values) {
       this->values.at(to_index(i)) = value;
     }
   }
 
-  constexpr auto at(index_type i) -> T& { return values.at(to_index(i)); }
+  constexpr auto at(key_type i) -> T& { return values.at(to_index(i)); }
 
-  constexpr auto at(index_type i) const -> const T& { return values.at(to_index(i)); }
+  constexpr auto at(key_type i) const -> const T& { return values.at(to_index(i)); }
 
-  constexpr auto operator[](index_type i) noexcept -> T& { return values[to_index(i)]; }
+  constexpr auto operator[](key_type i) noexcept -> T& { return values[to_index(i)]; }
 
-  constexpr auto operator[](index_type i) const noexcept -> const T& { return values[to_index(i)]; }
+  constexpr auto operator[](key_type i) const noexcept -> const T& { return values[to_index(i)]; }
 
 private:
   std::array<T, order> values;
 
-  static constexpr auto to_index(index_type W) -> std::size_t
+  static constexpr auto to_index(key_type W) -> std::size_t
   {
     if (W == V)
       return 0;
@@ -91,13 +109,13 @@ private:
     return ((W == Vs ? true : (++i, false)) || ...), i;
   }
 
-  template <index_type W> static constexpr auto to_index() -> std::size_t
+  template <key_type W> static constexpr auto to_index() -> std::size_t
   {
     static_assert(to_index(W) < order);
     return to_index(W);
   }
 
-  template <index_type W> static constexpr std::size_t index = to_index<W>();
+  template <key_type W> static constexpr std::size_t index = to_index<W>();
 };
 
 } // namespace cool
