@@ -12,7 +12,9 @@ set(cool_header_files
   ${CMAKE_CURRENT_SOURCE_DIR}/include/cool/ccreate.hpp
   ${CMAKE_CURRENT_SOURCE_DIR}/include/cool/thread_pool.hpp
   ${CMAKE_CURRENT_SOURCE_DIR}/include/cool/channel.hpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/include/cool/indices.hpp)
+  ${CMAKE_CURRENT_SOURCE_DIR}/include/cool/indices.hpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/include/cool/progress.hpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/include/cool/enum_map.hpp)
 
 target_sources(cool INTERFACE
   $<BUILD_INTERFACE:${cool_header_files}>

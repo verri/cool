@@ -24,8 +24,17 @@ set(source_files
   indices.cpp
   version.cpp)
 
+option(COOL_TEST_STANDARD "whether or not to build the test" 11)
+if(COOL_TEST_STANDARD GREATER 14)
+  set(source_files ${source_files} enum_map.cpp)
+endif()
+
 add_executable(cool_test_suite ${source_files})
-set_target_properties(cool_test_suite PROPERTIES CXX_STANDARD_REQUIRED ON CXX_EXTENSIONS OFF)
+
+set_target_properties(cool_test_suite PROPERTIES
+  CXX_STANDARD_REQUIRED ON
+  CXX_EXTENSIONS OFF
+  CXX_STANDARD ${COOL_TEST_STANDARD})
 
 option(COOL_TEST_COVERAGE "whether or not add coverage instrumentation" OFF)
 if (COOL_TEST_COVERAGE)

@@ -8,9 +8,12 @@ import re
 BASE_FLAGS = [
         '-Wall',
         '-Wextra',
-        '-std=c++11',
+        '-std=c++17',
         '-xc++',
-        '-I.'
+        '-I.',
+        '-I../include',
+        '-Iinclude',
+        '-Ibuild/test',
         ]
 
 SOURCE_EXTENSIONS = [

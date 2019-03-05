@@ -4,7 +4,7 @@ import ycm_core
 flags = [
 '-Wall',
 '-Wextra',
-'-std=c++11',
+'-std=c++17',
 '-x',
 'c++',
 '-I',
