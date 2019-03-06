@@ -37,12 +37,25 @@ template <typename T, auto V> struct enum_value_t : enum_key_t<V> {
 
 template <auto V> constexpr detail::enum_key_t<V> key;
 
-template <typename T, auto V, auto... Vs> class enum_map_iterator;
+template <typename T, auto V, auto... Vs> class enum_map_iterator
+{
+private:
+  using key_type = std::decay_t<decltype(V)>;
+  using mapped_type = T;
+
+public:
+  explicit enum_map_iterator() = default;
+  enum_map_iterator(key_type* key_it, mapped_type* mapped_it) : key_it{key_it}, mapped_it{mapped_it} {}
+
+private:
+  key_type* key_it;
+  mapped_type* mapped_it;
+};
 
 template <typename T, auto V, auto... Vs> class enum_map
 {
 public:
-  using key_type = decltype(V);
+  using key_type = std::decay_t<decltype(V)>;
   using mapped_type = T;
   using value_type = std::pair<key_type, mapped_type>;
 
@@ -81,9 +94,15 @@ public:
 
   template <auto W> constexpr auto operator[](detail::enum_key_t<W>) const noexcept -> const T& { return values[to_index<W>()]; }
 
-  template <auto W> constexpr auto find(detail::enum_key_t<W>) noexcept -> iterator;
+  template <auto W> constexpr auto find(detail::enum_key_t<W>) noexcept -> iterator
+  {
+    return begin() + to_index(W);
+  }
 
-  template <auto W> constexpr auto find(detail::enum_key_t<W>) const noexcept -> const_iterator;
+  template <auto W> constexpr auto find(detail::enum_key_t<W>) const noexcept -> const_iterator
+  {
+    return begin() + to_index(W);
+  }
 
   // Runtime construction and access.
   constexpr enum_map(std::initializer_list<value_type> values)
@@ -110,31 +129,39 @@ public:
 
   constexpr auto operator[](key_type i) const noexcept -> const T& { return values[to_index(i)]; }
 
-  constexpr auto find(key_type i) -> iterator;
-  constexpr auto find(key_type i) const -> const_iterator;
+  constexpr auto find(key_type i) -> iterator { return begin() + to_index(i); }
+
+  constexpr auto find(key_type i) const -> const_iterator { return begin() + to_index(i); }
 
   // Capacity
   constexpr auto empty() const noexcept -> bool { return false; }
   constexpr auto size() const noexcept -> size_type { return order; }
   constexpr auto max_size() const noexcept -> size_type { return order; }
 
+  constexpr auto data() -> T* { return values.data(); }
+  constexpr auto data() const -> const T* { return values.data(); }
+
   // Iterators
-  constexpr auto begin() noexcept -> iterator;
-  constexpr auto cbegin() const noexcept -> const_iterator;
+  constexpr auto begin() noexcept -> iterator { return {data(), keys.data()}; }
+  constexpr auto begin() const noexcept -> const_iterator { return {data(), keys.data()}; }
+  constexpr auto cbegin() const noexcept -> const_iterator { data(), keys.data(); }
 
-  constexpr auto end() noexcept -> iterator;
-  constexpr auto cend() const noexcept -> const_iterator;
+  constexpr auto end() noexcept -> iterator { return {data() + order, keys.data() + order}; }
+  constexpr auto end() const noexcept -> const_iterator { return {data() + order, keys.data() + order}; }
+  constexpr auto cend() const noexcept -> const_iterator { return {data() + order, keys.data() + order}; }
 
-  constexpr auto rbegin() noexcept -> reverse_iterator;
-  constexpr auto crbegin() const noexcept -> const_reverse_iterator;
+  constexpr auto rbegin() noexcept -> reverse_iterator { return std::make_reverse_iterator(end()); }
+  constexpr auto rbegin() const noexcept -> const_reverse_iterator { return std::make_reverse_iterator(end()); }
+  constexpr auto crbegin() const noexcept -> const_reverse_iterator { return std::make_reverse_iterator(cend()); }
 
-  constexpr auto rend() noexcept -> reverse_iterator;
-  constexpr auto crend() const noexcept -> const_reverse_iterator;
+  constexpr auto rend() noexcept -> reverse_iterator { return std::make_reverse_iterator(begin()); }
+  constexpr auto rend() const noexcept -> const_reverse_iterator { return std::make_reverse_iterator(begin()); }
+  constexpr auto crend() const noexcept -> const_reverse_iterator { return std::make_reverse_iterator(cbegin()); }
 
 private:
   std::array<T, order> values;
 
-  static constexpr auto to_index(key_type W) -> size_type
+  static constexpr auto to_index(key_type W) noexcept -> size_type
   {
     if (W == V)
       return 0;
@@ -143,7 +170,7 @@ private:
     return ((W == Vs ? true : (++i, false)) || ...), i;
   }
 
-  template <key_type W> static constexpr auto to_index() -> size_type
+  template <key_type W> static constexpr auto to_index() noexcept -> size_type
   {
     static_assert(to_index(W) < order);
     return to_index(W);
