@@ -24,7 +24,7 @@ set(source_files
   indices.cpp
   version.cpp)
 
-option(COOL_TEST_STANDARD "whether or not to build the test" 11)
+set(COOL_TEST_STANDARD 11 CACHE STRING "C++ version to compile the tests")
 if(COOL_TEST_STANDARD GREATER 14)
   set(source_files ${source_files} enum_map.cpp)
 endif()
