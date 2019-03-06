@@ -4,13 +4,17 @@
 
 TEST_CASE("Compile-time enum map operations", "[enum_map]")
 {
-  enum { A, B, C };
+  enum { A, B, C, D };
   using namespace cool;
 
-  constexpr enum_map<int, A, B, C> map(key<A>(1), key<B>(2), key<C>(3));
-  static_assert(map[key<A>] == 1);
-  static_assert(map[key<B>] == 2);
-  static_assert(map[key<C>] == 3);
+  constexpr enum_map<int, A, B, D> map(enum_key<A>(1), enum_key<B>(2), enum_key<D>(3));
+  static_assert(map[enum_key<A>] == 1);
+  static_assert(map[enum_key<B>] == 2);
+  static_assert(map[enum_key<D>] == 3);
+  static_assert(map.find(enum_key<C>) == map.end());
+  static_assert(!map.empty());
+  static_assert(map.size() == 3u);
+  static_assert(map.max_size() == 3u);
 }
 
 TEST_CASE("Runtime enum map operations", "[enum_map]")
@@ -23,5 +27,26 @@ TEST_CASE("Runtime enum map operations", "[enum_map]")
   CHECK(map[B] == 2);
   CHECK(map[C] == 3);
 
+  {
+    const auto keys = {A, B, C};
+    int i = 0;
+    auto key_it = keys.begin();
+
+    for (const auto& [key, value] : map) {
+      CHECK(*key_it++ == key);
+      CHECK(++i == value);
+    }
+  }
+
+  for (auto [key, value] : map)
+    value = 0;
+
+  {
+    auto it = map.crbegin();
+    while (it != map.crend())
+      CHECK((*it++).second == 0);
+  }
+
+  CHECK(map.find(D) == map.end());
   CHECK_THROWS(map.at(D));
 }
