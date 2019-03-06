@@ -7,10 +7,13 @@ TEST_CASE("Compile-time enum map operations", "[enum_map]")
   enum { A, B, C, D };
   using namespace cool;
 
-  constexpr enum_map<int, A, B, D> map(enum_key<A>(1), enum_key<B>(2), enum_key<D>(3));
+  static constexpr enum_map<int, A, B, D> map(enum_key<A>(1), enum_key<B>(2), enum_key<D>(3));
   static_assert(map[enum_key<A>] == 1);
   static_assert(map[enum_key<B>] == 2);
   static_assert(map[enum_key<D>] == 3);
+  static_assert(map.find(enum_key<A>) == map.begin());
+  static_assert(map.find(enum_key<B>) == map.begin() + 1);
+  static_assert(map.find(enum_key<D>) == map.begin() + 2);
   static_assert(map.find(enum_key<C>) == map.end());
   static_assert(!map.empty());
   static_assert(map.size() == 3u);
