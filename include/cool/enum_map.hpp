@@ -4,9 +4,7 @@
 /// \exclude
 #define COOL_ENUM_MAP_HXX_INCLUDED
 
-#if __cplusplus < 201703L
-#error "cool::enum_map requires C++17"
-#else
+static_assert(__cplusplus >= 201703L, "cool::enum_map requires C++17");
 
 #include <array>
 #include <iterator>
@@ -232,11 +230,8 @@ private:
     static_assert(to_index(W) < order);
     return to_index(W);
   }
-
-  template <key_type W> static constexpr size_type index = to_index<W>();
 };
 
 } // namespace cool
 
-#endif // C++17
 #endif // COOL_ENUM_MAP_HXX_INCLUDED
