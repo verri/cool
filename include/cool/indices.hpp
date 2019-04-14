@@ -3,6 +3,7 @@
 
 #include <iterator>
 #include <type_traits>
+#include <utility>
 
 #if __cpp_constexpr >= 201304
 #define RELAXED_CONSTEXPR constexpr
@@ -104,6 +105,23 @@ RELAXED_CONSTEXPR auto closed_indices(T begin, U end) noexcept ->
 {
   return {std::move(begin), std::move(++end)};
 }
+
+#if __cpp_lib_integer_sequence >= 201304
+namespace detail
+{
+template <typename F, std::size_t... I>
+constexpr decltype(auto) do_indices_private(const F& f, std::index_sequence<I...>) noexcept(noexcept(f(I...)))
+{
+  return f(I...);
+}
+} // namespace detail
+
+template <std::size_t N, typename F>
+constexpr decltype(auto) do_indices(const F& f) noexcept(noexcept(detail::do_indices_private(f, std::make_index_sequence<N>{})))
+{
+  return detail::do_indices_private(f, std::make_index_sequence<N>{});
+}
+#endif
 
 } // namespace cool
 

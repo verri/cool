@@ -73,3 +73,13 @@ TEST_CASE("Indices range", "[indices]")
       CHECK(j == i++);
   }
 }
+
+#if __cpp_lib_integer_sequence >= 201304
+TEST_CASE("Do indices", "[indices]")
+{
+  cool::do_indices<2>([](std::size_t i, std::size_t j) {
+    CHECK(i == 0);
+    CHECK(j == 1);
+  });
+}
+#endif
