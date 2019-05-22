@@ -11,6 +11,7 @@ set(cool_header_files
   ${CMAKE_CURRENT_SOURCE_DIR}/include/cool/defer.hpp
   ${CMAKE_CURRENT_SOURCE_DIR}/include/cool/ccreate.hpp
   ${CMAKE_CURRENT_SOURCE_DIR}/include/cool/thread_pool.hpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/include/cool/task_manager.hpp
   ${CMAKE_CURRENT_SOURCE_DIR}/include/cool/channel.hpp
   ${CMAKE_CURRENT_SOURCE_DIR}/include/cool/indices.hpp
   ${CMAKE_CURRENT_SOURCE_DIR}/include/cool/progress.hpp

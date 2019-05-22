@@ -21,6 +21,7 @@ set(source_files
   channel.cpp
   progress.cpp
   thread_pool.cpp
+  task_manager.cpp
   indices.cpp
   version.cpp)
 
