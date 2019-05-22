@@ -3,12 +3,13 @@
 
 #include <cool/indices.hpp>
 
+#include <algorithm>
 #include <functional>
 #include <future>
 #include <mutex>
-#include <queue>
 #include <thread>
 #include <type_traits>
+#include <vector>
 
 #if __cplusplus >= 201703L
 /// \exclude
@@ -18,8 +19,53 @@
 #define RESULT_OF_T(F, ...) typename std::result_of<F(__VA_ARGS__)>::type
 #endif
 
+#if __cpp_constexpr > 201703L // heap algorithms are constexpr only in C++20
+#define RELAXED_CONSTEXPR constexpr
+#else
+#define RELAXED_CONSTEXPR
+#endif
+
 namespace cool
 {
+
+namespace detail
+{
+template <typename RandomIt>
+RELAXED_CONSTEXPR void update_heap(RandomIt first, RandomIt last, RandomIt updated)
+{
+  // Sift up
+  auto current = updated;
+  while (current != first)
+  {
+    auto parent = first + (std::distance(first, current) - 1) / 2;
+    if (*current <= *parent)
+      break;
+
+    std::iter_swap(current, parent);
+    current = parent;
+  }
+
+  // Sift down
+  while (true)
+  {
+    auto maximum = current;
+    const auto lchild = first + 2 * std::distance(first, current) + 1;
+    const auto rchild = first + 2 * std::distance(first, current) + 2;
+
+    if (lchild < last && *lchild > *maximum)
+      maximum = lchild;
+
+    if (rchild < last && *rchild > *maximum)
+      maximum = rchild;
+
+    if (maximum == current)
+      break;
+
+    std::iter_swap(current, maximum);
+    current = maximum;
+  }
+}
+} // namespace detail
 
 class closed_task_manager : public std::system_error
 {
@@ -56,8 +102,9 @@ public:
             if (closed_ && tasks_.empty())
               return;
 
-            task = std::move(tasks_.top());
-            tasks_.pop();
+            std::pop_heap(tasks_.begin(), tasks_.end());
+            task = std::move(tasks_.back());
+            tasks_.pop_back();
           }
           task();
         }
@@ -83,7 +130,8 @@ public:
       if (closed_)
         throw closed_task_manager{std::make_error_code(std::errc::invalid_argument), "enqueue on closed task_manager"};
 
-      tasks_.push({priority, [task] { (*task)(); }});
+      tasks_.push_back({priority, [task] { (*task)(); }});
+      std::push_heap(tasks_.begin(), tasks_.end());
     }
     cv_.notify_one();
 
@@ -125,7 +173,7 @@ public:
 private:
   auto lock() const -> std::unique_lock<std::mutex> { return std::unique_lock<std::mutex>(mutex_); }
 
-  std::priority_queue<task> tasks_;
+  std::vector<task> tasks_;
   std::vector<std::thread> workers_;
 
   std::condition_variable cv_;
