@@ -30,13 +30,11 @@ namespace cool
 
 namespace detail
 {
-template <typename RandomIt>
-RELAXED_CONSTEXPR void update_heap(RandomIt first, RandomIt last, RandomIt updated)
+template <typename RandomIt> RELAXED_CONSTEXPR void update_heap(RandomIt first, RandomIt last, RandomIt updated)
 {
   // Sift up
   auto current = updated;
-  while (current != first)
-  {
+  while (current != first) {
     auto parent = first + (std::distance(first, current) - 1) / 2;
     if (*current <= *parent)
       break;
@@ -46,16 +44,15 @@ RELAXED_CONSTEXPR void update_heap(RandomIt first, RandomIt last, RandomIt updat
   }
 
   // Sift down
-  while (true)
-  {
+  while (true) {
     auto maximum = current;
     const auto lchild = first + 2 * std::distance(first, current) + 1;
     const auto rchild = first + 2 * std::distance(first, current) + 2;
 
-    if (lchild < last && *lchild > *maximum)
+    if (lchild < last && (*lchild > *maximum))
       maximum = lchild;
 
-    if (rchild < last && *rchild > *maximum)
+    if (rchild < last && (*rchild > *maximum))
       maximum = rchild;
 
     if (maximum == current)
@@ -118,7 +115,8 @@ public:
   auto operator=(const task_manager&) -> task_manager& = delete;
   auto operator=(task_manager &&) -> task_manager& = delete;
 
-  template <typename F, typename... Args> auto enqueue(int priority, F&& f, Args&&... args) -> std::future<RESULT_OF_T(F&&, Args&&...)>
+  template <typename F, typename... Args>
+  auto enqueue(int priority, F&& f, Args&&... args) -> std::future<RESULT_OF_T(F&&, Args&&...)>
   {
     using ptask_t = std::packaged_task<RESULT_OF_T(F&&, Args && ...)()>;
 
