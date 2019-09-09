@@ -116,7 +116,10 @@ TEST_CASE("Basic channel functionality", "[channel]")
 
     auto total = std::async(std::launch::async, sum, ch);
     auto thr = std::thread([&total]() { CHECK(total.get() == 15); });
-    std::async(std::launch::async, write, ch);
+    {
+      auto _ = std::async(std::launch::async, write, ch);
+      (void)_;
+    }
 
     thr.join();
 

@@ -41,8 +41,10 @@ TEST_CASE("Runtime enum map operations", "[enum_map]")
     }
   }
 
-  for (auto [key, value] : map)
+  for (auto [key, value] : map) {
+    (void)key;
     value = 0;
+  }
 
   {
     auto it = map.crbegin();
