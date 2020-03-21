@@ -26,7 +26,7 @@ set(source_files
 
 set(COOL_TEST_STANDARD 11 CACHE STRING "C++ version to compile the tests")
 if(COOL_TEST_STANDARD GREATER 14)
-  set(source_files ${source_files} enum_map.cpp)
+  set(source_files ${source_files} compose.cpp enum_map.cpp)
 endif()
 
 add_executable(cool_test_suite ${source_files})
