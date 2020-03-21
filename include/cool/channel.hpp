@@ -18,6 +18,12 @@
 #define RESULT_OF_T(F, ...) typename std::result_of<F(__VA_ARGS__)>::type
 #endif
 
+#if __cplusplus >= 201603L
+#define NODISCARD [[nodiscard]]
+#else
+#define NODISCARD
+#endif
+
 namespace cool
 {
 
@@ -205,7 +211,7 @@ public:
   }
 
   /// Queries whether a channel is closed or not.
-  auto is_closed() const noexcept -> bool
+  NODISCARD auto is_closed() const noexcept -> bool
   {
     auto l = lock();
     return non_blocking_is_closed();
@@ -225,7 +231,7 @@ public:
   }
 
   /// Returns the size of the internal buffer.
-  auto buffer_size() const noexcept -> std::size_t
+  NODISCARD auto buffer_size() const noexcept -> std::size_t
   {
     auto l = lock();
     return state_->buffer_size;
@@ -295,12 +301,12 @@ public:
   auto operator!=(const ochannel<T>& other) const noexcept -> bool { return state_ != other.state_; }
 
 private:
-  auto non_blocking_has_space() const noexcept -> bool { return state_->buffer.size() < state_->buffer_size; }
-  auto non_blocking_has_value() const noexcept -> bool { return state_->buffer.size() > 0; }
+  NODISCARD auto non_blocking_has_space() const noexcept -> bool { return state_->buffer.size() < state_->buffer_size; }
+  NODISCARD auto non_blocking_has_value() const noexcept -> bool { return state_->buffer.size() > 0; }
 
-  auto non_blocking_is_closed() const noexcept -> bool { return state_->closed; }
+  NODISCARD auto non_blocking_is_closed() const noexcept -> bool { return state_->closed; }
 
-  auto lock() const noexcept -> std::unique_lock<std::mutex> { return std::unique_lock<std::mutex>{state_->mutex}; }
+  NODISCARD auto lock() const noexcept -> std::unique_lock<std::mutex> { return std::unique_lock<std::mutex>{state_->mutex}; }
 
   std::shared_ptr<detail::channel_state<T>> state_;
   bool bad_ = false;
@@ -400,5 +406,6 @@ constexpr eod_t eod;
 } // namespace cool
 
 #undef RESULT_OF_T
+#undef NODISCARD
 
 #endif // COOL_CHANNEL_HXX_INCLUDED
