@@ -60,7 +60,7 @@ public:
   thread_pool(thread_pool&&) = delete;
 
   auto operator=(const thread_pool&) -> thread_pool& = delete;
-  auto operator=(thread_pool &&) -> thread_pool& = delete;
+  auto operator=(thread_pool&&) -> thread_pool& = delete;
 
   template <typename F, typename... Args> auto enqueue(F&& f, Args&&... args) -> std::future<RESULT_OF_T(F&&, Args&&...)>
   {

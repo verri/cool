@@ -9,9 +9,7 @@ static_assert(__cplusplus >= 201703L, "cool::compose requires C++17");
 namespace cool
 {
 
-template <typename... F>
-struct compose : F...
-{
+template <typename... F> struct compose : F... {
   explicit constexpr compose(F... f) noexcept((std::is_nothrow_move_constructible_v<F> && ...)) : F(std::move(f))... {}
   using F::operator()...;
 };
