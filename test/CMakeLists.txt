@@ -16,6 +16,7 @@ endif()
 set(source_files
   test_suite.cpp
   ccreate.cpp
+  colony.cpp
   compatibility.cpp
   defer.cpp
   channel.cpp
