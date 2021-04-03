@@ -7,26 +7,39 @@
 #include <vector>
 
 #if __cplusplus >= 201700L
+/// \exclude
 #define CONSTEXPR_IF if constexpr
 #else
+/// \exclude
 #define CONSTEXPR_IF if
 #endif
 
 #if __cplusplus >= 201603L
+/// \exclude
 #define NODISCARD [[nodiscard]]
 #else
+/// \exclude
 #define NODISCARD
 #endif
 
 #if __cpp_constexpr >= 201304
+/// \exclude
 #define RELAXED_CONSTEXPR constexpr
 #else
+/// \exclude
 #define RELAXED_CONSTEXPR
 #endif
 
 namespace cool
 {
 
+/// Colonies are unordered lists suitable for high-modification scenarios.
+///
+/// \module Colony
+///
+/// \notes All elements within a colony have a stable memory location, that is, pointers
+/// and iterators (including end()) to non-erased elements are valid regardless of
+/// insertions and erasures to the container and even when the container is moved.
 template <typename T> class colony
 {
   constexpr static std::size_t min_bucket_size = 16u;
@@ -110,11 +123,17 @@ template <typename T> class colony
   };
 
 public:
+  /// Colony's sentinel.
+  ///
+  /// \module Colony.
   struct sentinel {
   };
 
   class const_iterator;
 
+  /// Stable forward iterator.
+  ///
+  /// \module Colony.
   class iterator
   {
     friend class colony<T>;
@@ -160,6 +179,9 @@ public:
     node* node_ = nullptr;
   };
 
+  /// Stable forward iterator of immutable elements.
+  ///
+  /// \module Colony.
   class const_iterator
   {
     friend class colony<T>;
@@ -254,16 +276,35 @@ public:
       value.~T();
   }
 
+  /// \group push Inserts a new value into the container.
+  ///
+  /// Inserts (or constructs) a new value into the container.
+  ///
+  /// \returns Stable iterator to the inserted value.
+  ///
+  /// \notes Strong exception guarantee: both `value` and `this` is not changed if
+  /// an exception occurs.
+  /// \notes Always O(1) time complexity.
   auto push(const T& value) -> iterator
   {
     auto copy = value;
     return private_push(std::move(copy));
   }
 
+  /// \group push
   auto push(T&& value) -> iterator { return private_push(std::move(value)); }
 
+  /// \group push
   template <typename... Args> auto emplace(Args&&... args) -> iterator { return push(T(std::forward<Args>(args)...)); }
 
+  /// \group erase Erases an element in the container.
+  ///
+  /// Erases the element pointed by `it` in the container.
+  ///
+  /// \returns Stable iterator to next element.
+  ///
+  /// \notes Never invalidates other iterators.
+  /// \notes Always O(1) time complexity.
   auto erase(iterator it) noexcept -> iterator
   {
     auto* head = it.node_;
@@ -280,16 +321,14 @@ public:
     return it;
   }
 
-  NODISCARD auto capacity() const -> std::size_t
-  {
-    std::size_t result = 0;
-    for (auto* bucket = last_bucket_.get(); bucket; bucket = bucket->previous_.get())
-      result += bucket->capacity();
-    return result;
-  }
-
+  /// \group size Container size utilities.
+  ///
+  /// (1) Returns the container size.
+  /// (2) Returns true if the container is empty.
+  ///
   NODISCARD auto size() const -> std::size_t { return count_; }
 
+  /// \group size
   NODISCARD auto empty() const -> bool { return size() == 0; }
 
   NODISCARD auto begin() noexcept -> iterator { return iterator{head_}; }
