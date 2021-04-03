@@ -22,3 +22,15 @@
       - [`ichannel`](doc_channel.html#standardese-cool__ichannel-T-) - Input channel that can be constructed from a channel.
     
       - [`ochannel`](doc_channel.html#standardese-cool__ochannel-T-) - Output channel that can be constructed from a channel.
+
+  - ## Module `Colony`
+    
+      - [`colony`](doc_colony.html#standardese-cool__colony-T-) - Colonies are unordered lists suitable for high-modification scenarios.
+
+  - ## Module `Colony.`
+    
+      - [`sentinel`](doc_colony.html#standardese-cool__colony-T-__sentinel) - Colony’s sentinel.
+    
+      - [`iterator`](doc_colony.html#standardese-cool__colony-T-__iterator) - Stable forward iterator.
+    
+      - [`const_iterator`](doc_colony.html#standardese-cool__colony-T-__const_iterator) - Stable forward iterator of immutable elements.

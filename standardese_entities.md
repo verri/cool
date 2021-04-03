@@ -3,8 +3,6 @@
 
 # Project index
 
-  - [`CONSTEXPR_IF`](doc_colony.html#standardese-colony-hpp)
-
   - [`COOL_DEFER`](doc_defer.html#standardese-defer-hpp)
 
   - [`COOL_PROGRESS_HXX_INCLUDED`](doc_progress.html#standardese-progress-hpp)
@@ -12,10 +10,6 @@
   - [`COOL_TOKEN_CONCAT`](doc_defer.html#standardese-defer-hpp)
 
   - [`COOL_TOKEN_PASTE`](doc_defer.html#standardese-defer-hpp)
-
-  - [`NODISCARD`](doc_colony.html#standardese-colony-hpp)
-
-  - [`RELAXED_CONSTEXPR`](doc_colony.html#standardese-colony-hpp)
 
   - ## Namespace `cool`
     
@@ -27,7 +21,7 @@
     
       - [`closed_thread_pool`](doc_thread_pool.html#standardese-cool)
     
-      - [`colony`](doc_colony.html#standardese-cool)
+      - [`colony`](doc_colony.html#standardese-cool__colony-T-) - Colonies are unordered lists suitable for high-modification scenarios.
     
       - [`compose`](doc_compose.html#standardese-cool)
     
