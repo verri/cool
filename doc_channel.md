@@ -76,6 +76,10 @@ public:
 
     //=== Receive data from the channel ===//
     T receive();
+    template <typename Rep, typename Period, typename F>
+    typename std::enable_if<std::is_same<void, std::invoke_result_t<F, T>>::value, std::cv_status>::type wait_for(std::chrono::duration<Rep, Period> const& rel_time, F f);
+    template <typename Rep, typename Period, typename F>
+    typename std::enable_if<std::is_same<void, std::invoke_result_t<F, T>>::value, std::cv_status>::type wait_until(std::chrono::time_point<Rep, Period> const& time, F f);
     ichannel<T> operator>>(T& value) noexcept;
 
     void close() noexcept;
@@ -87,14 +91,6 @@ public:
     std::size_t buffer_size() const noexcept;
 
     explicit operator bool() const noexcept;
-
-    //=== Checks whether or not two channels are the same. ===//
-    bool operator==(channel<T> const& other) const noexcept;
-    bool operator==(ichannel<T> const& other) const noexcept;
-    bool operator==(ochannel<T> const& other) const noexcept;
-    bool operator!=(channel<T> const& other) const noexcept;
-    bool operator!=(ichannel<T> const& other) const noexcept;
-    bool operator!=(ochannel<T> const& other) const noexcept;
 };
 ```
 
@@ -147,7 +143,13 @@ Sends data into the channel.
 ``` cpp
 (1) T receive();
 
-(2) ichannel<T> operator>>(T& value) noexcept;
+(2) template <typename Rep, typename Period, typename F>
+typename std::enable_if<std::is_same<void, std::invoke_result_t<F, T>>::value, std::cv_status>::type wait_for(std::chrono::duration<Rep, Period> const& rel_time, F f);
+
+(3) template <typename Rep, typename Period, typename F>
+typename std::enable_if<std::is_same<void, std::invoke_result_t<F, T>>::value, std::cv_status>::type wait_until(std::chrono::time_point<Rep, Period> const& time, F f);
+
+(4) ichannel<T> operator>>(T& value) noexcept;
 ```
 
 Receives data from the channel.
@@ -219,24 +221,6 @@ Checks if the channel is in a bad state, i.e., whether the last `<<` or `>>` ope
 *Notes:* This property propagates to copies of the channel.
 
 *Notes:* Before any stream operation, returns true.
-
------
-
-### Checks whether or not two channels are the same.
-
-``` cpp
-(1) bool operator==(channel<T> const& other) const noexcept;
-
-(2) bool operator==(ichannel<T> const& other) const noexcept;
-
-(3) bool operator==(ochannel<T> const& other) const noexcept;
-
-(4) bool operator!=(channel<T> const& other) const noexcept;
-
-(5) bool operator!=(ichannel<T> const& other) const noexcept;
-
-(6) bool operator!=(ochannel<T> const& other) const noexcept;
-```
 
 -----
 
