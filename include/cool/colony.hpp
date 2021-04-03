@@ -1,6 +1,7 @@
 #ifndef COOL_COLONY_HPP_INCLUDED
 #define COOL_COLONY_HPP_INCLUDED
 
+#include <cstddef>
 #include <memory>
 #include <type_traits>
 #include <utility>
@@ -98,7 +99,12 @@ template <typename T> class colony
   };
 
 public:
-  class const_iterator;
+  using value_type = T;
+  using size_type = std::size_t;
+  using reference = value_type&;
+  using const_reference = const value_type&;
+  using pointer = value_type*;
+  using const_pointer = const value_type*;
 
   /// Stable forward iterator.
   ///
