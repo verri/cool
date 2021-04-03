@@ -305,11 +305,11 @@ public:
 
   NODISCARD constexpr auto cend() const noexcept -> sentinel { return {}; }
 #else
-  NODISCARD auto end() noexcept -> iterator { return iterator{end_}; }
+  NODISCARD auto end() noexcept -> iterator { return iterator{end_.get()}; }
 
-  NODISCARD auto end() const noexcept -> const_iterator { return const_iterator{end_}; }
+  NODISCARD auto end() const noexcept -> const_iterator { return const_iterator{end_.get()}; }
 
-  NODISCARD auto cend() const noexcept -> const_iterator { return const_iterator{end_}; }
+  NODISCARD auto cend() const noexcept -> const_iterator { return const_iterator{end_.get()}; }
 #endif
 
 private:
@@ -360,7 +360,7 @@ private:
   node* last_erased_ = nullptr;
   std::size_t count_ = 0u;
 #if __cplusplus < 201700
-  node* end_ = new node(nullptr);
+  std::unique_ptr<node> end_ = std::unique_ptr<node>(new node(nullptr));
 #endif
 };
 
