@@ -19,10 +19,16 @@ to use.
 Each header file contains a utility:
 - [cool/ccreate.hpp](https://github.com/verri/cool/blob/master/include/cool/ccreate.hpp):
     wrapper to deal with legacy C data types that need to be created and destroyed.
+- [cool/colony.hpp](https://github.com/verri/cool/blob/master/include/cool/colony.hpp):
+    simplified and didactic version of std::colony.
 - [cool/channel.hpp](https://github.com/verri/cool/blob/master/include/cool/channel.hpp):
     [Go-like](https://gobyexample.com/channels) channels.
+- [cool/compose.hpp](https://github.com/verri/cool/blob/master/include/cool/compose.hpp):
+    lambda composition (C++17 and above only).
 - [cool/defer.hpp](https://github.com/verri/cool/blob/master/include/cool/defer.hpp):
     deferred execution of statements.
+- [cool/enum_map.hpp](https://github.com/verri/cool/blob/master/include/cool/enum_map.hpp):
+    enumeration map (C++17 and above only).
 - [cool/indices.hpp](https://github.com/verri/cool/blob/master/include/cool/indices.hpp):
     utility to provide safer for loops.
 - [cool/thread_pool.hpp](https://github.com/verri/cool/blob/master/include/cool/thread_pool.hpp):
@@ -55,11 +61,9 @@ $ cd cool
 
 Install via CMake 3.0+.
 ```
-$ mkdir build
-$ cd build
-$ cmake ..
-$ make
-# make install
+$ cmake -H. -Bbuild
+$ cmake --build build
+$ cmake --install build
 ```
 
 # Usage and Compilation
@@ -97,13 +101,16 @@ An incomplete API reference is available [here](https://verri.github.io/cool/).
 
 Given the simplicity of the libraries, usage examples should suffice.
 - [cool::ccreate](https://github.com/verri/cool/blob/master/test/ccreate.cpp)
+- [cool::colony](https://github.com/verri/cool/blob/master/test/colony.cpp)
 - [cool::channel](https://github.com/verri/cool/blob/master/test/channel.cpp)
+- [cool::compose](https://github.com/verri/cool/blob/master/test/compose.cpp)
 - [cool::defer](https://github.com/verri/cool/blob/master/test/defer.cpp)
+- [cool::enum_map](https://github.com/verri/cool/blob/master/test/enum_map.cpp)
 - [cool::indices](https://github.com/verri/cool/blob/master/test/indices.cpp)
 - [cool::thread_pool](https://github.com/verri/cool/blob/master/test/thread_pool.cpp)
 
 # Acknowledgements
 
-This project is supported by **FAPESP** as part of the project *"High level data
+This project was supported by **FAPESP** as part of the project *"High level data
 classification based on complex network applied to invariant pattern recognition"*
 (Grant number 2013/25876-6).
