@@ -66,7 +66,7 @@ template <typename T> class colony
 
     node(const node&) = delete;
 
-    node(node&&) noexcept { std::terminate(); }
+    [[noreturn]] node(node&&) noexcept { std::terminate(); }
 
     auto operator=(const node&) -> node& = delete;
 
@@ -361,14 +361,7 @@ private:
 
   auto push_at_end(T&& value) -> iterator
   {
-    node* before = nullptr;
-
-    if (last_bucket_ == nullptr) {
-      last_bucket_ = std::unique_ptr<bucket>(new bucket(nullptr));
-      before = head_;
-    } else {
-      before = last_bucket_->last();
-    }
+    node* before = last_bucket_->last();
 
     if (last_bucket_->full())
       last_bucket_ = std::unique_ptr<bucket>(new bucket(std::move(last_bucket_)));
