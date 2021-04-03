@@ -1,10 +1,9 @@
 #ifndef COOL_COLONY_HPP_INCLUDED
 #define COOL_COLONY_HPP_INCLUDED
 
-#include <exception>
 #include <memory>
 #include <type_traits>
-#include <vector>
+#include <utility>
 
 #if __cplusplus >= 201700L
 /// \exclude
@@ -44,91 +43,61 @@ template <typename T> class colony
 {
   constexpr static std::size_t min_bucket_size = 16u;
 
+  class node;
+
+  struct erased_information {
+    node* before;
+    node* last_erased;
+  };
+
   class node
   {
-    friend class colony<T>;
-
-    struct nothing_type {
-    };
-
-    struct erased_information_type {
-      node* before;
-      node* last_erased;
-    };
-
-    static_assert(std::is_trivially_destructible<erased_information_type>::value,
-                  "erased_information must be trivially destructible to keep expected complexity order of the operations.");
+    friend class colony;
 
   public:
-    explicit node(node* next = nullptr) : next_{next}, nothing_{} {}
-
-    ~node() noexcept { do_nothing(); }
+    node() : einfo{} {}
+    node(T&& value, node* next = nullptr) : value{std::move(value)}, next{next} {}
 
     node(const node&) = delete;
-
-    [[noreturn]] node(node&&) noexcept { std::terminate(); }
+    node(node&&) noexcept = delete;
 
     auto operator=(const node&) -> node& = delete;
-
-    [[noreturn]] auto operator=(node&&) noexcept -> node& { std::terminate(); }
+    auto operator=(node&&) noexcept -> node& = delete;
 
   private:
-    auto next() -> node*& { return next_; }
-    auto erased_information() -> erased_information_type& { return erased_information_; }
-    auto value() -> T& { return value_; }
-
-    void do_nothing() noexcept {}
-
-    node* next_ = nullptr;
     union {
-      nothing_type nothing_;
-      erased_information_type erased_information_;
-      T value_;
+      erased_information einfo;
+      T value;
     };
+    node* next = nullptr;
   };
+
+  static_assert(std::is_trivially_destructible<node>::value, "node must be trivially destructible.");
 
   class bucket
   {
     friend class colony<T>;
 
   public:
-    bucket(std::size_t size = min_bucket_size)
-    {
-      nodes_.reserve(size);
-      nodes_.emplace_back(nullptr);
-    }
+    bucket(std::size_t capacity = min_bucket_size) : capacity_{capacity} {}
 
-    explicit bucket(std::unique_ptr<bucket> previous) : previous_{std::move(previous)}
-    {
-      nodes_.reserve(2 * previous_->capacity());
-    }
+    explicit bucket(std::unique_ptr<bucket> previous) : capacity_{previous->capacity_}, previous_{std::move(previous)} {}
 
-    NODISCARD auto full() const noexcept -> bool { return nodes_.size() == nodes_.capacity(); }
+    NODISCARD auto full() const noexcept -> bool { return size_ == capacity_; }
 
-    NODISCARD auto capacity() const noexcept -> std::size_t { return nodes_.capacity(); }
+    auto push() -> node* { return new (nodes_.get() + size_++) node; }
 
-    auto push(T value) noexcept -> node*
-    {
-      nodes_.emplace_back();
-      auto* node = &nodes_.back();
-      new (&node->value()) T(std::move(value));
-      return node;
-    }
-
-    auto last() noexcept -> node* { return &nodes_.back(); }
+    auto push(T&& value) noexcept -> node* { return new (nodes_.get() + size_++) node(std::move(value)); }
 
   private:
-    std::vector<node> nodes_;
+    using storage_type = typename std::aligned_storage<sizeof(node), alignof(node)>::type;
+    std::size_t size_ = 0;
+    std::size_t capacity_;
     std::unique_ptr<bucket> previous_ = nullptr;
+    std::unique_ptr<storage_type[]> nodes_ = std::unique_ptr<storage_type[]>(new storage_type[capacity_]);
   };
 
 public:
-  /// Colony's sentinel.
-  ///
-  /// \module Colony.
-  struct sentinel {
-  };
-
   class const_iterator;
 
   /// Stable forward iterator.
@@ -150,7 +119,7 @@ public:
 
     auto operator++() -> iterator&
     {
-      node_ = node_->next();
+      node_ = node_->next;
       return *this;
     }
 
@@ -161,17 +130,13 @@ public:
       return copy;
     }
 
-    auto operator*() const -> T& { return node_->next()->value(); }
+    auto operator*() const -> T& { return node_->next->value; }
 
-    auto operator->() const -> T* { return &node_->next()->value(); }
+    auto operator->() const -> T* { return &node_->next->value; }
 
-    auto operator==(const iterator& other) const -> bool { return node_->next() == other.node_->next(); }
+    auto operator==(const iterator& other) const -> bool { return node_->next == other.node_->next; }
 
-    auto operator==(sentinel) const -> bool { return node_->next() == nullptr; }
-
-    auto operator!=(const iterator& other) const -> bool { return node_->next() != other.node_->next(); }
-
-    auto operator!=(sentinel) const -> bool { return node_->next() != nullptr; }
+    auto operator!=(const iterator& other) const -> bool { return node_->next != other.node_->next; }
 
   private:
     explicit constexpr iterator(node* node) : node_{node} {}
@@ -200,7 +165,7 @@ public:
 
     auto operator++() -> const_iterator&
     {
-      node_ = node_->next();
+      node_ = node_->next;
       return *this;
     }
 
@@ -211,31 +176,21 @@ public:
       return copy;
     }
 
-    auto operator*() const -> const T& { return node_->next()->value(); }
+    auto operator*() const -> const T& { return node_->next->value; }
 
-    auto operator->() const -> const T* { return &node_->next()->value(); }
+    auto operator->() const -> const T* { return &node_->next->value; }
 
-    auto operator==(const const_iterator& other) const -> bool { return node_->next() == other.node_->next(); }
+    auto operator==(const const_iterator& other) const -> bool { return node_->next == other.node_->next; }
 
-    auto operator==(const iterator& other) const -> bool { return node_->next() == other.node_->next(); }
+    auto operator==(const iterator& other) const -> bool { return node_->next == other.node_->next; }
 
-    auto operator==(sentinel) const -> bool { return node_->next() == nullptr; }
+    friend auto operator==(const iterator& lhs, const const_iterator& rhs) -> bool { return lhs.node_->next == rhs.node_->next; }
 
-    friend auto operator==(const iterator& lhs, const const_iterator& rhs) -> bool
-    {
-      return lhs.node_->next() == rhs.node_->next();
-    }
+    auto operator!=(const const_iterator& other) const -> bool { return node_->next != other.node_->next; }
 
-    auto operator!=(const const_iterator& other) const -> bool { return node_->next() != other.node_->next(); }
+    auto operator!=(const iterator& other) const -> bool { return node_->next != other.node_->next; }
 
-    auto operator!=(const iterator& other) const -> bool { return node_->next() != other.node_->next(); }
-
-    auto operator!=(sentinel) const -> bool { return node_->next() != nullptr; }
-
-    friend auto operator!=(const iterator& lhs, const const_iterator& rhs) -> bool
-    {
-      return lhs.node_->next() != rhs.node_->next();
-    }
+    friend auto operator!=(const iterator& lhs, const const_iterator& rhs) -> bool { return lhs.node_->next != rhs.node_->next; }
 
   private:
     explicit constexpr const_iterator(node* node) : node_{node} {}
@@ -308,12 +263,12 @@ public:
   auto erase(iterator it) noexcept -> iterator
   {
     auto* head = it.node_;
-    auto* to_be_erased = head->next();
+    auto* to_be_erased = head->next;
 
-    to_be_erased->value().~T();
-    new (&to_be_erased->erased_information()) typename node::erased_information_type{head, last_erased_};
+    to_be_erased->value.~T();
+    to_be_erased->einfo = {head, last_erased_};
 
-    head->next() = to_be_erased->next();
+    head->next = to_be_erased->next;
     last_erased_ = to_be_erased;
 
     --count_;
@@ -337,19 +292,11 @@ public:
 
   NODISCARD auto cbegin() const noexcept -> const_iterator { return const_iterator{head_}; }
 
-#if __cplusplus >= 201700
-  NODISCARD constexpr auto end() noexcept -> sentinel { return {}; }
+  NODISCARD auto end() noexcept -> iterator { return iterator{end_}; }
 
-  NODISCARD constexpr auto end() const noexcept -> sentinel { return {}; }
+  NODISCARD auto end() const noexcept -> const_iterator { return const_iterator{end_}; }
 
-  NODISCARD constexpr auto cend() const noexcept -> sentinel { return {}; }
-#else
-  NODISCARD auto end() noexcept -> iterator { return iterator{end_.get()}; }
-
-  NODISCARD auto end() const noexcept -> const_iterator { return const_iterator{end_.get()}; }
-
-  NODISCARD auto cend() const noexcept -> const_iterator { return const_iterator{end_.get()}; }
-#endif
+  NODISCARD auto cend() const noexcept -> const_iterator { return const_iterator{end_}; }
 
 private:
   auto private_push(T&& value) -> iterator
@@ -361,39 +308,37 @@ private:
 
   auto push_at_end(T&& value) -> iterator
   {
-    node* before = last_bucket_->last();
-
     if (last_bucket_->full())
       last_bucket_ = std::unique_ptr<bucket>(new bucket(std::move(last_bucket_)));
 
     auto* node = last_bucket_->push(std::move(value));
-    before->next() = node;
+
+    end_->next = node;
     ++count_;
 
-    return iterator{before};
+    std::swap(node, end_);
+
+    return iterator{node};
   }
 
   auto push_at_last_erased(T&& value) noexcept -> iterator
   {
-    const auto erased_information = last_erased_->erased_information();
-    // NOTE: noop: last_erased_->erased_information().~erased_information_type();
-    new (&last_erased_->value()) T(std::move(value));
+    const auto einfo = last_erased_->einfo;
+    last_erased_ = new (last_erased_) node(std::move(value), einfo.before->next);
 
-    erased_information.before->next() = last_erased_;
-    last_erased_ = erased_information.last_erased;
+    einfo.before->next = last_erased_;
+    last_erased_ = einfo.last_erased;
 
     ++count_;
 
-    return iterator{erased_information.before};
+    return iterator{einfo.before};
   }
 
   std::unique_ptr<bucket> last_bucket_ = std::unique_ptr<bucket>(new bucket);
-  node* head_ = last_bucket_->last();
+  node* head_ = last_bucket_->push();
+  node* end_ = head_;
   node* last_erased_ = nullptr;
   std::size_t count_ = 0u;
-#if __cplusplus < 201700
-  std::unique_ptr<node> end_ = std::unique_ptr<node>(new node(nullptr));
-#endif
 };
 
 } // namespace cool
