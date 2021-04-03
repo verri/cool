@@ -25,15 +25,15 @@ TEST_CASE("Basic indices functionality", "[indices]")
     CHECK(i < 3);  // "i" is immutable here.
   }
 
-  for (const auto i : cool::indices(0, 3l)) {
+  for (const auto i : cool::indices(0, 3L)) {
     // "i" ∈ [0, 3)
     CHECK(0 <= i);
     CHECK(i < 3);
 
     // Type of "i" is the common type of the arguments.
     static_assert(std::is_same<typename std::remove_const<decltype(i)>::type,
-                               typename std::common_type<decltype(0), decltype(3l)>::type>::value,
-                  "");
+                               typename std::common_type<decltype(0), decltype(3L)>::type>::value,
+                  "that shouldn't happen");
   }
 
   std::vector<char> letters_vec;
@@ -81,5 +81,19 @@ TEST_CASE("Do indices", "[indices]")
     CHECK(i == 0);
     CHECK(j == 1);
   });
+}
+#endif
+
+#if __cplusplus >= 201700L
+// NOTE: in C++20 can be a lambda
+template <typename T, std::size_t N> auto array_sum(const std::array<T, N>& array)
+{
+  return cool::do_indices<N>([&array](auto... i) { return (T{} + ... + array[i]); });
+}
+
+TEST_CASE("Do indices to index array", "[indices]")
+{
+  CHECK(6 == array_sum(std::array{1, 2, 3}));
+  CHECK(3 == array_sum(std::array{1, 2, 3, -3}));
 }
 #endif
