@@ -2,6 +2,7 @@
 
 #include <catch.hpp>
 
+#include <memory>
 #include <random>
 #include <set>
 #include <utility>
@@ -41,4 +42,20 @@ TEST_CASE("Basic colony operations", "[colony]")
   const auto end = std::next(c.begin(), c.size());
   for (const auto i : erased)
     CHECK(std::find(c.begin(), end, i) == end);
+}
+
+TEST_CASE("Check end never invalidates and removing all elements", "[colony]")
+{
+  colony<std::unique_ptr<int>> c;
+
+  for (int i = 0; i < 5; ++i)
+    c.emplace(new int{i});
+
+  CHECK_FALSE(c.empty());
+
+  const auto end = c.end();
+  for (auto it = c.begin(); it != end;)
+    it = c.erase(it);
+
+  CHECK(c.empty());
 }

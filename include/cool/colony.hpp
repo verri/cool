@@ -56,8 +56,10 @@ template <typename T> class colony
     friend class colony;
 
   public:
-    node() : einfo{} {}
-    node(T&& value, node* next = nullptr) : value{std::move(value)}, next{next} {}
+    node() noexcept : einfo{} {}
+    node(T&& value, node* next = nullptr) noexcept : value{std::move(value)}, next{next} {}
+
+    ~node() noexcept = delete;
 
     node(const node&) = delete;
     node(node&&) noexcept = delete;
@@ -73,13 +75,11 @@ template <typename T> class colony
     node* next = nullptr;
   };
 
-  static_assert(std::is_trivially_destructible<node>::value, "node must be trivially destructible.");
-
   class bucket
   {
     friend class colony<T>;
 
-  public:
+  private:
     bucket(std::size_t capacity = min_bucket_size) : capacity_{capacity} {}
 
     explicit bucket(std::unique_ptr<bucket> previous) : capacity_{previous->capacity_}, previous_{std::move(previous)} {}
@@ -90,7 +90,6 @@ template <typename T> class colony
 
     auto push(T&& value) noexcept -> node* { return new (nodes_.get() + size_++) node(std::move(value)); }
 
-  private:
     using storage_type = typename std::aligned_storage<sizeof(node), alignof(node)>::type;
     std::size_t size_ = 0;
     std::size_t capacity_;
