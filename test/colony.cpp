@@ -48,7 +48,7 @@ TEST_CASE("Check removing all elements", "[colony]")
 {
   colony<std::unique_ptr<int>> c;
 
-  for (int i = 0; i < 5; ++i)
+  for (int i = 0; i < 32; ++i)
     c.emplace(new int{i});
 
   CHECK_FALSE(c.empty());
@@ -57,4 +57,8 @@ TEST_CASE("Check removing all elements", "[colony]")
     it = c.erase(it);
 
   CHECK(c.empty());
+
+  for (int i = 0; i < 32; ++i)
+    c.emplace(new int{i});
+  // no memory leak
 }
