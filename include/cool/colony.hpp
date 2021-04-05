@@ -38,7 +38,7 @@ namespace cool
 /// \module Colony
 ///
 /// \notes All elements within a colony have a stable memory location, that is, pointers
-/// and iterators (including end()) to non-erased elements are valid regardless of
+/// and iterators to non-erased, non-past-end elements are valid regardless of
 /// insertions and erasures to the container and even when the container is moved.
 template <typename T> class colony
 {
@@ -105,6 +105,12 @@ public:
   using pointer = value_type*;
   using const_pointer = const value_type*;
 
+  /// Colony's sentinel
+  ///
+  /// \module Colony.
+  struct sentinel {
+  };
+
   /// Stable forward iterator.
   ///
   /// \module Colony.
@@ -142,6 +148,10 @@ public:
     auto operator==(const iterator& other) const -> bool { return node_->next == other.node_->next; }
 
     auto operator!=(const iterator& other) const -> bool { return node_->next != other.node_->next; }
+
+    auto operator==(sentinel) const -> bool { return node_->next == nullptr; }
+
+    auto operator!=(sentinel) const -> bool { return node_->next != nullptr; }
 
   private:
     explicit constexpr iterator(node* node) : node_{node} {}
@@ -191,11 +201,19 @@ public:
 
     friend auto operator==(const iterator& lhs, const const_iterator& rhs) -> bool { return lhs.node_->next == rhs.node_->next; }
 
+    auto operator==(sentinel) const -> bool { return node_->next == nullptr; }
+
+    friend auto operator==(sentinel, const const_iterator& rhs) -> bool { return nullptr == rhs.node_->next; }
+
     auto operator!=(const const_iterator& other) const -> bool { return node_->next != other.node_->next; }
 
     auto operator!=(const iterator& other) const -> bool { return node_->next != other.node_->next; }
 
     friend auto operator!=(const iterator& lhs, const const_iterator& rhs) -> bool { return lhs.node_->next != rhs.node_->next; }
+
+    auto operator!=(sentinel) const -> bool { return node_->next != nullptr; }
+
+    friend auto operator!=(sentinel, const const_iterator& rhs) -> bool { return nullptr != rhs.node_->next; }
 
   private:
     explicit constexpr const_iterator(node* node) : node_{node} {}
@@ -245,6 +263,7 @@ public:
   /// \notes Strong exception guarantee: both `value` and `this` is not changed if
   /// an exception occurs.
   /// \notes Always O(1) time complexity.
+  /// \notes May invalidate end().
   auto push(const T& value) -> iterator
   {
     auto copy = value;
@@ -297,11 +316,22 @@ public:
 
   NODISCARD auto cbegin() const noexcept -> const_iterator { return const_iterator{head_}; }
 
-  NODISCARD auto end() noexcept -> iterator { return iterator{end_}; }
+  NODISCARD auto lend() noexcept -> iterator { return iterator{end_}; }
 
-  NODISCARD auto end() const noexcept -> const_iterator { return const_iterator{end_}; }
+  NODISCARD auto lend() const noexcept -> const_iterator { return const_iterator{end_}; }
 
-  NODISCARD auto cend() const noexcept -> const_iterator { return const_iterator{end_}; }
+  NODISCARD auto clend() const noexcept -> const_iterator { return const_iterator{end_}; }
+#if __cplusplus >= 201700
+  [[nodiscard]] constexpr auto end() const noexcept -> sentinel { return {}; }
+
+  [[nodiscard]] constexpr auto cend() const noexcept -> sentinel { return {}; }
+#else
+  NODISCARD auto end() noexcept -> iterator { return lend(); }
+
+  NODISCARD auto end() const noexcept -> const_iterator { return lend(); }
+
+  NODISCARD auto cend() const noexcept -> const_iterator { return clend(); }
+#endif
 
 private:
   auto private_push(T&& value) -> iterator

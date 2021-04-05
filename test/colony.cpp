@@ -23,7 +23,7 @@ TEST_CASE("Basic colony operations", "[colony]")
       c.push(j);
     }
 
-    for (auto it = c.begin(); it != c.end();) {
+    for (auto it = c.begin(); it != colony<int>::sentinel{};) {
       if (dist(gen)) {
         ++it;
       } else {
@@ -39,12 +39,12 @@ TEST_CASE("Basic colony operations", "[colony]")
   for (const auto i : static_cast<const colony<int>&>(c))
     CHECK(set.count(i) > 0);
 
-  const auto end = std::next(c.begin(), c.size());
+  // NOTE: legacy end is needed here.
   for (const auto i : erased)
-    CHECK(std::find(c.begin(), end, i) == end);
+    CHECK(std::find(c.begin(), c.lend(), i) == c.lend());
 }
 
-TEST_CASE("Check end never invalidates and removing all elements", "[colony]")
+TEST_CASE("Check removing all elements", "[colony]")
 {
   colony<std::unique_ptr<int>> c;
 
@@ -53,8 +53,7 @@ TEST_CASE("Check end never invalidates and removing all elements", "[colony]")
 
   CHECK_FALSE(c.empty());
 
-  const auto end = c.end();
-  for (auto it = c.begin(); it != end;)
+  for (auto it = c.begin(); it != c.end();)
     it = c.erase(it);
 
   CHECK(c.empty());
