@@ -29,7 +29,7 @@
 
   - ## Module `Colony.`
     
-      - [`sentinel`](doc_colony.html#standardese-cool__colony-T-__sentinel) - Colony’s sentinel.
+      - [`sentinel`](doc_colony.html#standardese-cool__colony-T-__sentinel) - Colony’s sentinel
     
       - [`iterator`](doc_colony.html#standardese-cool__colony-T-__iterator) - Stable forward iterator.
     

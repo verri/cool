@@ -41,7 +41,7 @@ public:
 
 Colonies are unordered lists suitable for high-modification scenarios.
 
-*Notes:* All elements within a colony have a stable memory location, that is, pointers and iterators (including end()) to non-erased elements are valid regardless of insertions and erasures to the container and even when the container is moved.
+*Notes:* All elements within a colony have a stable memory location, that is, pointers and iterators to non-erased, non-past-end elements are valid regardless of insertions and erasures to the container and even when the container is moved.
 
 ### Struct `cool::colony::sentinel` \[Colony.\]
 
@@ -51,7 +51,7 @@ struct sentinel
 };
 ```
 
-Colony’s sentinel.
+Colony’s sentinel
 
 -----
 
@@ -97,6 +97,8 @@ Inserts (or constructs) a new value into the container.
 *Notes:* Strong exception guarantee: both `value` and `this` is not changed if an exception occurs.
 
 *Notes:* Always O(1) time complexity.
+
+*Notes:* May invalidate end().
 
 -----
 
