@@ -18,9 +18,9 @@ set(cool_header_files
   ${CMAKE_CURRENT_SOURCE_DIR}/include/cool/progress.hpp
   ${CMAKE_CURRENT_SOURCE_DIR}/include/cool/enum_map.hpp)
 
-target_sources(cool INTERFACE
-  $<BUILD_INTERFACE:${cool_header_files}>
-  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/cool/version.hpp>)
+# target_sources(cool INTERFACE
+#   $<BUILD_INTERFACE:${cool_header_files}>
+#   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/cool/version.hpp>)
 
 target_include_directories(cool INTERFACE
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/>

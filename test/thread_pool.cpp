@@ -1,6 +1,6 @@
 #include <cool/thread_pool.hpp>
 
-#include <catch.hpp>
+#include <catch2/catch_test_macros.hpp>
 
 TEST_CASE("Basic thread_pool functionalities", "[thread_pool]")
 {
