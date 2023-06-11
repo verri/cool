@@ -42,7 +42,7 @@ namespace cool
 /// insertions and erasures to the container and even when the container is moved.
 template <typename T> class colony
 {
-  constexpr static std::size_t min_bucket_size = 16u;
+  constexpr static std::size_t default_bucket_size = 16u;
 
   class node;
 
@@ -80,7 +80,7 @@ template <typename T> class colony
     friend class colony<T>;
 
   private:
-    bucket(std::size_t capacity = min_bucket_size) : capacity_{capacity} {}
+    bucket(std::size_t capacity = default_bucket_size) : capacity_{capacity} {}
 
     explicit bucket(std::unique_ptr<bucket> previous) : capacity_{previous->capacity_}, previous_{std::move(previous)} {}
 
@@ -224,9 +224,12 @@ public:
 public:
   colony() = default;
 
+  colony(std::size_t bucket_capacity) : last_bucket_{new bucket(bucket_capacity)} {}
+
   colony(const colony& source) : last_bucket_{new bucket(source.size() + 1u)}
   {
     // NOTE: should not reallocate
+    // XXX: is this the appropriate behavior? is bucket capacity too big?
     for (const auto& value : source)
       push(value);
   }
