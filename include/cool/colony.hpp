@@ -308,10 +308,10 @@ public:
   /// (1) Returns the container size.
   /// (2) Returns true if the container is empty.
   ///
-  NODISCARD auto size() const -> std::size_t { return count_; }
+  NODISCARD auto size() const noexcept -> std::size_t { return count_; }
 
   /// \group size
-  NODISCARD auto empty() const -> bool { return size() == 0; }
+  NODISCARD auto empty() const noexcept -> bool { return size() == 0; }
 
   NODISCARD auto begin() noexcept -> iterator { return iterator{head_}; }
 
