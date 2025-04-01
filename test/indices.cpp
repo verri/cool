@@ -84,7 +84,7 @@ TEST_CASE("Do indices", "[indices]")
 }
 #endif
 
-#if __cplusplus >= 201700L
+#if __cplusplus >= 202000L
 // NOTE: in C++20 can be a lambda
 template <typename T, std::size_t N> auto array_sum(const std::array<T, N>& array)
 {

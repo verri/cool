@@ -5,3 +5,5 @@
 *.gcda
 *.gcov
 build
+.cache
+.clangd

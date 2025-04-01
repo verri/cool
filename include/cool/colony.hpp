@@ -90,11 +90,26 @@ template <typename T> class colony
 
     auto push(T&& value) noexcept -> node* { return new (nodes_.get() + size_++) node(std::move(value)); }
 
+#if __cplusplus >= 202300
+    struct node_deleter {
+      void operator()(node* ptr) const noexcept
+      {
+        operator delete[](std::launder(reinterpret_cast<std::byte*>(ptr)), std::align_val_t(alignof(node)));
+      }
+    };
+
+    std::size_t size_ = 0;
+    std::size_t capacity_;
+    std::unique_ptr<bucket> previous_ = nullptr;
+    std::unique_ptr<node[], node_deleter> nodes_ = std::unique_ptr<node[], node_deleter>(
+      std::launder(reinterpret_cast<node*>(new (std::align_val_t(alignof(node))) std::byte[capacity_ * sizeof(node)])));
+#else
     using storage_type = typename std::aligned_storage<sizeof(node), alignof(node)>::type;
     std::size_t size_ = 0;
     std::size_t capacity_;
     std::unique_ptr<bucket> previous_ = nullptr;
     std::unique_ptr<storage_type[]> nodes_ = std::unique_ptr<storage_type[]>(new storage_type[capacity_]);
+#endif
   };
 
 public:

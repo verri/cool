@@ -8,6 +8,7 @@
 #include <memory>
 #include <mutex>
 #include <queue>
+#include <stdexcept>
 #include <type_traits>
 
 #if __cplusplus >= 201703L

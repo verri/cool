@@ -16,7 +16,7 @@ TEST_CASE("Basic ccreate functionality", "[ccreate]")
   {
     auto fp = cool::ccreate(std::tmpfile(), std::fclose);
     std::fprintf(fp.get(), "Hello"); // FILE* can be retrieved by std::unique_ptr::get.
-  }                                  // fp is closed here.
+  } // fp is closed here.
   {
     const char hello[] = "Hello";
     auto p = cool::ccreate(std::malloc(sizeof(char) * (1 + std::strlen(hello))), std::free);
