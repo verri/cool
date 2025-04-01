@@ -122,13 +122,13 @@ public:
 
   /// Colony's sentinel
   ///
-  /// \module Colony.
+  /// \module Colony
   struct sentinel {
   };
 
   /// Stable forward iterator.
   ///
-  /// \module Colony.
+  /// \module Colony
   class iterator
   {
     friend class colony<T>;
@@ -176,7 +176,7 @@ public:
 
   /// Stable forward iterator of immutable elements.
   ///
-  /// \module Colony.
+  /// \module Colony
   class const_iterator
   {
     friend class colony<T>;
