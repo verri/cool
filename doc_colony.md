@@ -25,17 +25,17 @@ public:
     class const_iterator;
 
     //=== Inserts a new value into the container. ===//
-    cool::colony::iterator push(T const& value);
-    cool::colony::iterator push(T&& value);
+    iterator push(T const& value);
+    iterator push(T&& value);
     template <typename ... Args>
-    cool::colony::iterator emplace(Args &&... args);
+    iterator emplace(Args &&... args);
 
     //=== Erases an element in the container. ===//
-    cool::colony::iterator erase(cool::colony::iterator it) noexcept;
+    iterator erase(iterator it) noexcept;
 
     //=== Container size utilities. ===//
-    std::size_t size() const;
-    bool empty() const;
+    std::size_t size() const noexcept;
+    bool empty() const noexcept;
 };
 ```
 
@@ -43,7 +43,7 @@ Colonies are unordered lists suitable for high-modification scenarios.
 
 *Notes:* All elements within a colony have a stable memory location, that is, pointers and iterators to non-erased, non-past-end elements are valid regardless of insertions and erasures to the container and even when the container is moved.
 
-### Struct `cool::colony::sentinel` \[Colony.\]
+### Struct `cool::colony::sentinel` \[Colony\]
 
 ``` cpp
 struct sentinel
@@ -55,7 +55,7 @@ Colony’s sentinel
 
 -----
 
-### Class `cool::colony::iterator` \[Colony.\]
+### Class `cool::colony::iterator` \[Colony\]
 
 ``` cpp
 class iterator
@@ -67,7 +67,7 @@ Stable forward iterator.
 
 -----
 
-### Class `cool::colony::const_iterator` \[Colony.\]
+### Class `cool::colony::const_iterator` \[Colony\]
 
 ``` cpp
 class const_iterator
@@ -82,12 +82,12 @@ Stable forward iterator of immutable elements.
 ### Inserts a new value into the container.
 
 ``` cpp
-(1) cool::colony::iterator push(T const& value);
+(1) iterator push(T const& value);
 
-(2) cool::colony::iterator push(T&& value);
+(2) iterator push(T&& value);
 
 (3) template <typename ... Args>
-cool::colony::iterator emplace(Args &&... args);
+iterator emplace(Args &&... args);
 ```
 
 Inserts (or constructs) a new value into the container.
@@ -105,7 +105,7 @@ Inserts (or constructs) a new value into the container.
 ### Erases an element in the container.
 
 ``` cpp
-(1) cool::colony::iterator erase(cool::colony::iterator it) noexcept;
+(1) iterator erase(iterator it) noexcept;
 ```
 
 Erases the element pointed by `it` in the container.
@@ -121,9 +121,9 @@ Erases the element pointed by `it` in the container.
 ### Container size utilities.
 
 ``` cpp
-(1) std::size_t size() const;
+(1) std::size_t size() const noexcept;
 
-(2) bool empty() const;
+(2) bool empty() const noexcept;
 ```
 
 (1) Returns the container size.

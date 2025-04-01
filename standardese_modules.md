@@ -26,8 +26,6 @@
   - ## Module `Colony`
     
       - [`colony`](doc_colony.html#standardese-cool__colony-T-) - Colonies are unordered lists suitable for high-modification scenarios.
-
-  - ## Module `Colony.`
     
       - [`sentinel`](doc_colony.html#standardese-cool__colony-T-__sentinel) - Colony’s sentinel
     
