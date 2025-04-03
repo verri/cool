@@ -1,5 +1,5 @@
 ---
-title: "Docs | Cool"
+title: "Docs"
 layout: default
 ---
 

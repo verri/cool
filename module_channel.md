@@ -1,5 +1,5 @@
 ---
-title: "Channel | Cool"
+title: "Channel"
 layout: default
 ---
 
@@ -184,19 +184,21 @@ int main() {
 
 ### Using `ichannel` and `ochannel` to Restrict Operations
 
-`ichannel<T>` allows only receiving, while `ochannel<T>` allows only sending. This prevents unwanted operations on a given channel.
+`ichannel<T>` allows only receiving, while `ochannel<T>` allows only sending.
+This prevents unwanted operations on a given channel.  Note that copies
+refer to the same channel.
 
 ```cpp
 #include <cool/channel.hpp>
 #include <iostream>
 
-void consumer(cool::ichannel<int>& in) {
+void consumer(cool::ichannel<int> in) {
     int value;
     in.receive(value);
     std::cout << "Received: " << value << std::endl;
 }
 
-void producer(cool::ochannel<int>& out) {
+void producer(cool::ochannel<int> out) {
     out.send(42);
 }
 

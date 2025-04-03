@@ -1,5 +1,5 @@
 ---
-title: "CCreate | Cool"
+title: "CCreate"
 layout: default
 ---
 
