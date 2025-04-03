@@ -3,9 +3,9 @@ title: "CCreate | Cool"
 layout: default
 ---
 
-# CCreate: Smart Pointer Wrapper for C APIs
+# cool::create - Smart Pointer Wrapper for C APIs
 
-Consult complete reference documentation at [cool::ccreate](doc_create.html).
+Consult complete reference documentation at [cool::ccreate](doc_ccreate.html).
 
 ## Motivation
 

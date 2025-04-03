@@ -20,8 +20,9 @@ For installation, usage and compilation instructions, please refer to the
 Modules
 -------
 
-- [CCreate](module_create.html): wrapper to deal with legacy C data types that need
+- [CCreate](module_ccreate.html): wrapper to deal with legacy C data types that need
   to be created and destroyed.
+- [Channel](module_channel.html): a modern and safe message-passing utility.
 
 Documentation
 -------------
