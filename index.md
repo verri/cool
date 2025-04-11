@@ -23,6 +23,7 @@ Modules
 - [CCreate](module_ccreate.html): wrapper to deal with legacy C data types that need
   to be created and destroyed.
 - [Channel](module_channel.html): a modern and safe message-passing utility.
+- [Thread Pool](module_thread_pool.html): a simple and intuitive thread pool implementation.
 
 Documentation
 -------------
