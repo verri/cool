@@ -78,7 +78,7 @@ TEST_CASE("Colony constructor tests", "[colony]")
     colony<int> c(8);
     CHECK(c.empty());
     CHECK(c.size() == 0);
-    
+
     // Fill more than one bucket to test bucket size
     for (int i = 0; i < 20; ++i) {
       c.push(i);
@@ -92,7 +92,7 @@ TEST_CASE("Colony constructor tests", "[colony]")
     c1.push(1);
     c1.push(2);
     c1.push(3);
-    
+
     colony<int> c2(c1);
     CHECK(c2.size() == 3);
     CHECK(std::equal(c1.begin(), c1.lend(), c2.begin()));
@@ -104,7 +104,7 @@ TEST_CASE("Colony constructor tests", "[colony]")
     c1.push(1);
     c1.push(2);
     c1.push(3);
-    
+
     colony<int> c2(std::move(c1));
     CHECK(c2.size() == 3);
   }
@@ -113,17 +113,16 @@ TEST_CASE("Colony constructor tests", "[colony]")
 struct ThrowingType {
   int value;
   static int construction_count;
-  
-  ThrowingType(int v) : value(v) {
+
+  ThrowingType(int v) : value(v)
+  {
     construction_count++;
     if (construction_count == 5) {
       throw std::runtime_error("Throwing constructor");
     }
   }
-  
-  ~ThrowingType() {
-    construction_count--;
-  }
+
+  ~ThrowingType() { construction_count--; }
 };
 
 int ThrowingType::construction_count = 0;
@@ -132,23 +131,23 @@ TEST_CASE("Colony exception safety", "[colony]")
 {
   // Test that colony maintains basic consistency
   colony<int> c;
-  
+
   // Test that we can add elements after construction
   c.emplace(1);
   c.emplace(2);
   c.emplace(3);
   c.emplace(4);
-  
+
   CHECK(c.size() == 4);
-  
+
   // Test that iterator remains valid after successful operations
   auto it = c.begin();
   CHECK(*it == 1);
-  
+
   // Test that we can continue to add elements
   c.emplace(5);
   CHECK(c.size() == 5);
-  
+
   // Test that we can still iterate after additions
   int count = 0;
   for (const auto& item : c) {

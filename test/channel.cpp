@@ -9,16 +9,17 @@ using namespace cool;
 struct ThrowingChannelType {
   int value;
   static int copy_count;
-  
+
   ThrowingChannelType(int v) : value(v) {}
-  
-  ThrowingChannelType(const ThrowingChannelType& other) : value(other.value) {
+
+  ThrowingChannelType(const ThrowingChannelType& other) : value(other.value)
+  {
     copy_count++;
     if (copy_count == 3) {
       throw std::runtime_error("Copy constructor threw");
     }
   }
-  
+
   ThrowingChannelType& operator=(const ThrowingChannelType&) = default;
   ThrowingChannelType(ThrowingChannelType&&) = default;
   ThrowingChannelType& operator=(ThrowingChannelType&&) = default;
@@ -198,49 +199,49 @@ TEST_CASE("Channel exception safety", "[channel]")
   {
     auto ch = channel<int>();
     ch.close();
-    
+
     CHECK_THROWS_AS(ch.send(1), closed_channel);
     CHECK_THROWS_AS(ch.send(std::move(1)), closed_channel);
   }
-  
+
   // Test empty_closed_channel exception
   {
     auto ch = channel<int>();
     ch.close();
-    
+
     CHECK_THROWS_AS(ch.receive(), empty_closed_channel);
   }
-  
+
   // Test basic exception safety
   {
     auto ch = channel<int>();
-    
+
     // Test that channel works normally
     ch.send(1);
     ch.send(2);
-    
+
     CHECK_FALSE(ch.is_closed());
-    
+
     // Should be able to receive the sent items
     auto item1 = ch.receive();
     CHECK(item1 == 1);
-    
+
     auto item2 = ch.receive();
     CHECK(item2 == 2);
   }
-  
+
   // Test buffer size changes don't break exception safety
   {
     auto ch = channel<int>(2);
-    
+
     ch.send(1);
     ch.send(2);
-    
+
     // Change buffer size while data is present
     ch.buffer_size(5);
-    
+
     ch.send(3);
-    
+
     CHECK(ch.receive() == 1);
     CHECK(ch.receive() == 2);
     CHECK(ch.receive() == 3);

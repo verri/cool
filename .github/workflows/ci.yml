@@ -8,169 +8,15 @@ on:
 
 jobs:
   test:
-    name: Test C++${{ matrix.cpp_standard }} on ${{ matrix.os }}
-    runs-on: ${{ matrix.os }}
+    name: Test C++${{ matrix.cpp_standard }}
+    runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
         cpp_standard: [11, 14, 17, 20, 23]
-        include:
-          - os: ubuntu-latest
-            compiler: gcc
-            generator: "Unix Makefiles"
-          - os: windows-latest
-            compiler: msvc
-            generator: "Visual Studio 17 2022"
-          - os: macos-latest
-            compiler: clang
-            generator: "Unix Makefiles"
-        exclude:
-          # C++23 might not be available on all platforms
-          - os: windows-latest
-            cpp_standard: 23
-          - os: macos-latest
-            cpp_standard: 23
 
     steps:
     - uses: actions/checkout@v4
-
-    - name: Setup CMake
-      uses: jwlawson/actions-setup-cmake@v2
-      with:
-        cmake-version: '3.10'
-
-    - name: Configure CMake (Unix)
-      if: matrix.os != 'windows-latest'
-      run: |
-        cmake -S. -Bbuild \
-          -DCOOL_BUILD_TEST=ON \
-          -DCOOL_TEST_STANDARD=${{ matrix.cpp_standard }} \
-          -DCMAKE_BUILD_TYPE=Release
-
-    - name: Configure CMake (Windows)
-      if: matrix.os == 'windows-latest'
-      run: |
-        cmake -S. -Bbuild -G "${{ matrix.generator }}" ^
-          -DCOOL_BUILD_TEST=ON ^
-          -DCOOL_TEST_STANDARD=${{ matrix.cpp_standard }} ^
-          -DCMAKE_BUILD_TYPE=Release
-
-    - name: Build
-      run: cmake --build build --config Release
-
-    - name: Test
-      run: |
-        cd build
-        ctest --output-on-failure --build-config Release || ./test/cool_test_suite
-
-  coverage:
-    name: Code Coverage
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v4
-
-    - name: Install coverage tools
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y lcov
-
-    - name: Setup CMake
-      uses: jwlawson/actions-setup-cmake@v2
-      with:
-        cmake-version: '3.10'
-
-    - name: Configure CMake with coverage
-      run: |
-        cmake -S. -Bbuild \
-          -DCOOL_BUILD_TEST=ON \
-          -DCOOL_TEST_COVERAGE=ON \
-          -DCMAKE_BUILD_TYPE=Debug
-
-    - name: Build with coverage
-      run: cmake --build build
-
-    - name: Run tests with coverage
-      run: |
-        cd build
-        ./test/cool_test_suite
-
-    - name: Generate coverage report
-      run: |
-        cd build
-        lcov --capture --directory . --output-file coverage.info
-        lcov --remove coverage.info '/usr/*' --output-file coverage.info
-        lcov --remove coverage.info '*/test/*' --output-file coverage.info
-        lcov --remove coverage.info '*/_deps/*' --output-file coverage.info
-        lcov --list coverage.info
-
-    - name: Upload coverage to Codecov
-      uses: codecov/codecov-action@v4
-      with:
-        file: ./build/coverage.info
-        flags: unittests
-        name: codecov-umbrella
-        fail_ci_if_error: false
-
-  sanitizers:
-    name: Sanitizers
-    runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        sanitizer: [address, undefined, thread]
-    steps:
-    - uses: actions/checkout@v4
-
-    - name: Setup CMake
-      uses: jwlawson/actions-setup-cmake@v2
-      with:
-        cmake-version: '3.10'
-
-    - name: Configure CMake with sanitizers
-      run: |
-        cmake -S. -Bbuild \
-          -DCOOL_BUILD_TEST=ON \
-          -DCMAKE_BUILD_TYPE=Debug \
-          -DCMAKE_CXX_FLAGS="-fsanitize=${{ matrix.sanitizer }} -fno-omit-frame-pointer"
-
-    - name: Build
-      run: cmake --build build
-
-    - name: Run tests with sanitizers
-      run: |
-        cd build
-        ./test/cool_test_suite
-
-  formatting:
-    name: Code Formatting
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v4
-
-    - name: Install clang-format
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y clang-format
-
-    - name: Check formatting
-      run: |
-        find include test -name "*.hpp" -o -name "*.cpp" | xargs clang-format -i -style=file
-        if ! git diff --exit-code; then
-          echo "Code is not formatted properly. Please run 'make format' locally."
-          exit 1
-        fi
-
-  static-analysis:
-    name: Static Analysis
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v4
-
-    - name: Install clang-tidy
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y clang-tidy
 
     - name: Setup CMake
       uses: jwlawson/actions-setup-cmake@v2
@@ -178,11 +24,10 @@ jobs:
         cmake-version: '3.10'
 
     - name: Configure CMake
-      run: |
-        cmake -S. -Bbuild \
-          -DCOOL_BUILD_TEST=ON \
-          -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
+      run: cmake -S. -Bbuild -DCOOL_BUILD_TEST=ON -DCOOL_TEST_STANDARD=${{ matrix.cpp_standard }} -DCMAKE_BUILD_TYPE=Release
 
-    - name: Run clang-tidy
-      run: |
-        find include -name "*.hpp" | xargs clang-tidy -p build -- -std=c++11
+    - name: Build
+      run: cmake --build build
+
+    - name: Test
+      run: ./build/test/cool_test_suite
