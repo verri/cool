@@ -22,9 +22,12 @@ jobs:
         for std in 11 14 17 20 23; do
           echo "Testing C++$std"
           rm -rf build
-          cmake . -Bbuild -DCOOL_BUILD_TEST=ON -DCOOL_TEST_STANDARD=$std
-          cmake --build build
-          ./build/test/cool_test_suite
+          mkdir -p build
+          cd build
+          cmake .. -DCOOL_BUILD_TEST=ON -DCOOL_TEST_STANDARD=$std -DCMAKE_BUILD_TYPE=Release
+          cmake --build .
+          ./test/cool_test_suite
+          cd ..
         done
 
   create-release:
