@@ -94,9 +94,9 @@ public:
 
   constexpr auto operator!=(const enum_map_iterator& other) const noexcept { return mapped_it != other.mapped_it; }
 
-  constexpr auto operator<(const enum_map_iterator& other) const noexcept { return mapped_it > other.mapped_it; }
+  constexpr auto operator<(const enum_map_iterator& other) const noexcept { return mapped_it < other.mapped_it; }
 
-  constexpr auto operator>(const enum_map_iterator& other) const noexcept { return mapped_it < other.mapped_it; }
+  constexpr auto operator>(const enum_map_iterator& other) const noexcept { return mapped_it > other.mapped_it; }
 
   constexpr auto operator<=(const enum_map_iterator& other) const noexcept { return mapped_it <= other.mapped_it; }
 

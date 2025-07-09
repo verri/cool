@@ -28,7 +28,7 @@ The project uses CMake as its primary build system:
 
 ```bash
 # Configure with default C++ standard (C++11)
-cmake -H. -Bbuild
+cmake -S. -Bbuild
 
 # Build the project
 cmake --build build
@@ -43,26 +43,26 @@ The project supports multiple C++ standards. Use separate build directories:
 
 ```bash
 # C++11 (default)
-cmake -H. -Bbuild-c++11 -DCOOL_TEST_STANDARD=11
+cmake -S. -Bbuild-c++11 -DCOOL_TEST_STANDARD=11
 
 # C++14
-cmake -H. -Bbuild-c++14 -DCOOL_TEST_STANDARD=14
+cmake -S. -Bbuild-c++14 -DCOOL_TEST_STANDARD=14
 
 # C++17 (enables compose and enum_map)
-cmake -H. -Bbuild-c++17 -DCOOL_TEST_STANDARD=17
+cmake -S. -Bbuild-c++17 -DCOOL_TEST_STANDARD=17
 
 # C++20
-cmake -H. -Bbuild-c++20 -DCOOL_TEST_STANDARD=20
+cmake -S. -Bbuild-c++20 -DCOOL_TEST_STANDARD=20
 
 # C++23
-cmake -H. -Bbuild-c++23 -DCOOL_TEST_STANDARD=23
+cmake -S. -Bbuild-c++23 -DCOOL_TEST_STANDARD=23
 ```
 
 ### Testing
 
 ```bash
 # Enable testing during configuration
-cmake -H. -Bbuild -DCOOL_BUILD_TEST=ON
+cmake -S. -Bbuild -DCOOL_BUILD_TEST=ON
 
 # Build and run tests
 cmake --build build
@@ -75,7 +75,7 @@ cmake --build build
 
 ```bash
 # Configure with coverage
-cmake -H. -Bbuild -DCOOL_BUILD_TEST=ON -DCOOL_TEST_COVERAGE=ON -DCMAKE_BUILD_TYPE=Debug
+cmake -S. -Bbuild -DCOOL_BUILD_TEST=ON -DCOOL_TEST_COVERAGE=ON -DCMAKE_BUILD_TYPE=Debug
 
 # Build and run tests
 cmake --build build

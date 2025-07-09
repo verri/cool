@@ -1,5 +1,5 @@
-cmake_minimum_required(VERSION 3.5)
-project(Cool VERSION 0.0.0)
+cmake_minimum_required(VERSION 3.10)
+project(Cool VERSION 1.0.0)
 
 configure_file("include/cool/version.hpp.in" "include/cool/version.hpp")
 

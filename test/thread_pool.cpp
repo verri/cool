@@ -42,3 +42,62 @@ TEST_CASE("Basic thread_pool functionalities", "[thread_pool]")
     pool.join(); // `join` closes the pool.
   }
 }
+
+TEST_CASE("Thread pool constructor tests", "[thread_pool]")
+{
+  using namespace cool;
+  
+  // Default constructor (uses hardware_concurrency)
+  {
+    thread_pool pool;
+    CHECK_FALSE(pool.is_closed());
+    pool.join();
+  }
+  
+  // Constructor with explicit thread count
+  {
+    thread_pool pool(2);
+    CHECK_FALSE(pool.is_closed());
+    pool.join();
+  }
+  
+  // Constructor with zero threads (should use hardware_concurrency)
+  {
+    thread_pool pool(0);
+    CHECK_FALSE(pool.is_closed());
+    pool.join();
+  }
+}
+
+TEST_CASE("Thread pool exception safety", "[thread_pool]")
+{
+  using namespace cool;
+  
+  // Test basic pool operation
+  {
+    thread_pool pool(1);
+    
+    auto result = pool.enqueue([]() { return 42; });
+    CHECK(result.get() == 42);
+    
+    pool.join();
+  }
+  
+  // Test multiple tasks
+  {
+    thread_pool pool(2);
+    
+    std::vector<std::future<int>> futures;
+    
+    for (int i = 0; i < 5; ++i) {
+      futures.push_back(pool.enqueue([i]() { return i * 2; }));
+    }
+    
+    // Check results
+    for (int i = 0; i < 5; ++i) {
+      CHECK(futures[i].get() == i * 2);
+    }
+    
+    pool.join();
+  }
+}

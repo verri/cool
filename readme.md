@@ -2,6 +2,8 @@
 
 [![GitHub license](https://img.shields.io/badge/license-Zlib-blue.svg)](https://raw.githubusercontent.com/verri/cool/master/license.txt)
 [![Github Releases](https://img.shields.io/github/release/verri/cool.svg)](https://github.com/verri/cool/releases)
+[![CI](https://github.com/verri/cool/workflows/CI/badge.svg)](https://github.com/verri/cool/actions/workflows/ci.yml)
+[![codecov](https://codecov.io/gh/verri/cool/branch/master/graph/badge.svg)](https://codecov.io/gh/verri/cool)
 
 Common standalone C++11 utilities.
 
@@ -59,7 +61,7 @@ $ git clone https://github.com/verri/cool.git
 $ cd cool
 ```
 
-Install via CMake 3.5+.
+Install via CMake 3.10+.
 ```
 $ cmake -S. -Bbuild
 $ cmake --build build
@@ -72,7 +74,7 @@ $ cmake --install build
 Some headers, however, use threads, e.g. `channel` and `thread_pool`.
 Thus, you will probably need to link a thread library as well.
 
-## Recommended: CMake 3.5+
+## Recommended: CMake 3.10+
 
 If you installed the library as a submodule, include the following line in your `CMakeLists.txt`
 ```

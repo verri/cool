@@ -1,0 +1,123 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+
+jobs:
+  test:
+    name: Test before release
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Setup CMake
+      uses: jwlawson/actions-setup-cmake@v2
+      with:
+        cmake-version: '3.10'
+
+    - name: Test all C++ standards
+      run: |
+        for std in 11 14 17 20 23; do
+          echo "Testing C++$std"
+          rm -rf build
+          cmake -S. -Bbuild -DCOOL_BUILD_TEST=ON -DCOOL_TEST_STANDARD=$std
+          cmake --build build
+          ./build/test/cool_test_suite
+        done
+
+  create-release:
+    name: Create Release
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Get version from tag
+      id: get_version
+      run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
+
+    - name: Create release archive
+      run: |
+        # Create a clean archive without build artifacts
+        mkdir -p cool-${{ steps.get_version.outputs.VERSION }}
+        cp -r include cool-${{ steps.get_version.outputs.VERSION }}/
+        cp -r test cool-${{ steps.get_version.outputs.VERSION }}/
+        cp CMakeLists.txt cool-${{ steps.get_version.outputs.VERSION }}/
+        cp readme.md cool-${{ steps.get_version.outputs.VERSION }}/
+        cp license.txt cool-${{ steps.get_version.outputs.VERSION }}/
+        cp CLAUDE.md cool-${{ steps.get_version.outputs.VERSION }}/
+        cp Makefile cool-${{ steps.get_version.outputs.VERSION }}/
+        tar -czf cool-${{ steps.get_version.outputs.VERSION }}.tar.gz cool-${{ steps.get_version.outputs.VERSION }}
+        zip -r cool-${{ steps.get_version.outputs.VERSION }}.zip cool-${{ steps.get_version.outputs.VERSION }}
+
+    - name: Generate changelog
+      id: changelog
+      run: |
+        # Get commits since last tag
+        LAST_TAG=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")
+        if [ -z "$LAST_TAG" ]; then
+          echo "First release"
+          CHANGELOG="First stable release of the Cool C++ utilities library."
+        else
+          CHANGELOG=$(git log --pretty=format:"- %s" $LAST_TAG..HEAD)
+        fi
+        
+        # Save changelog to file for multiline handling
+        cat > changelog.txt << 'EOF'
+        Cool Library ${{ steps.get_version.outputs.VERSION }}
+        
+        A collection of self-contained C++ utilities for common programming tasks.
+        
+        ## Features
+        - **colony**: Unordered container with stable memory addresses
+        - **channel**: Go-like channels for thread communication  
+        - **thread_pool**: Thread pool with job queuing
+        - **defer**: Deferred execution of statements
+        - **compose**: Lambda composition (C++17+)
+        - **enum_map**: Enumeration-based mapping (C++17+)
+        - **indices**: Safer range-based for loops
+        - **ccreate**: Legacy C data type wrapper
+        - **progress**: Progress tracking utility
+        
+        ## Compatibility
+        - Supports C++11 through C++23
+        - Header-only library
+        - Cross-platform (Linux, Windows, macOS)
+        - Requires CMake 3.10+
+        
+        ## Changes
+        $CHANGELOG
+        EOF
+
+    - name: Create GitHub Release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ github.ref }}
+        release_name: Cool Library ${{ steps.get_version.outputs.VERSION }}
+        body_path: changelog.txt
+        draft: false
+        prerelease: false
+
+    - name: Upload Release Assets
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: cool-${{ steps.get_version.outputs.VERSION }}.tar.gz
+        asset_name: cool-${{ steps.get_version.outputs.VERSION }}.tar.gz
+        asset_content_type: application/gzip
+
+    - name: Upload Release Assets (ZIP)
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: cool-${{ steps.get_version.outputs.VERSION }}.zip
+        asset_name: cool-${{ steps.get_version.outputs.VERSION }}.zip
+        asset_content_type: application/zip
