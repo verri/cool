@@ -22,7 +22,7 @@ jobs:
         for std in 11 14 17 20 23; do
           echo "Testing C++$std"
           rm -rf build
-          cmake -S. -Bbuild -DCOOL_BUILD_TEST=ON -DCOOL_TEST_STANDARD=$std
+          cmake -S . -B build -DCOOL_BUILD_TEST=ON -DCOOL_TEST_STANDARD=$std
           cmake --build build
           ./build/test/cool_test_suite
         done

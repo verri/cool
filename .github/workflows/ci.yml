@@ -24,7 +24,7 @@ jobs:
         cmake-version: '3.10'
 
     - name: Configure CMake
-      run: cmake -S. -Bbuild -DCOOL_BUILD_TEST=ON -DCOOL_TEST_STANDARD=${{ matrix.cpp_standard }} -DCMAKE_BUILD_TYPE=Release
+      run: cmake -S . -B build -DCOOL_BUILD_TEST=ON -DCOOL_TEST_STANDARD=${{ matrix.cpp_standard }} -DCMAKE_BUILD_TYPE=Release
 
     - name: Build
       run: cmake --build build
