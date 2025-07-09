@@ -61,7 +61,7 @@ $ git clone https://github.com/verri/cool.git
 $ cd cool
 ```
 
-Install via CMake 3.10+.
+Install via CMake 3.11+.
 ```
 $ cmake -S. -Bbuild
 $ cmake --build build
@@ -74,7 +74,7 @@ $ cmake --install build
 Some headers, however, use threads, e.g. `channel` and `thread_pool`.
 Thus, you will probably need to link a thread library as well.
 
-## Recommended: CMake 3.10+
+## Recommended: CMake 3.11+
 
 If you installed the library as a submodule, include the following line in your `CMakeLists.txt`
 ```
