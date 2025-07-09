@@ -31,6 +31,8 @@ Each header file contains a utility:
     utility to provide safer for loops.
 - [cool/thread_pool.hpp](https://github.com/verri/cool/blob/master/include/cool/thread_pool.hpp):
     Pool of threads with queueable jobs.
+- [cool/progress.hpp](https://github.com/verri/cool/blob/master/include/cool/progress.hpp):
+    Progress tracking utility.
 
 # Installation
 
@@ -57,9 +59,9 @@ $ git clone https://github.com/verri/cool.git
 $ cd cool
 ```
 
-Install via CMake 3.0+.
+Install via CMake 3.5+.
 ```
-$ cmake -H. -Bbuild
+$ cmake -S. -Bbuild
 $ cmake --build build
 $ cmake --install build
 ```
@@ -70,7 +72,7 @@ $ cmake --install build
 Some headers, however, use threads, e.g. `channel` and `thread_pool`.
 Thus, you will probably need to link a thread library as well.
 
-## Recommended: CMake 3.0+
+## Recommended: CMake 3.5+
 
 If you installed the library as a submodule, include the following line in your `CMakeLists.txt`
 ```
@@ -106,6 +108,7 @@ Given the simplicity of the libraries, usage examples should suffice.
 - [cool::enum_map](https://github.com/verri/cool/blob/master/test/enum_map.cpp)
 - [cool::indices](https://github.com/verri/cool/blob/master/test/indices.cpp)
 - [cool::thread_pool](https://github.com/verri/cool/blob/master/test/thread_pool.cpp)
+- [cool::progress](https://github.com/verri/cool/blob/master/test/progress.cpp)
 
 # Acknowledgements
 
