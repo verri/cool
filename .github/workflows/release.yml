@@ -15,7 +15,7 @@ jobs:
     - name: Setup CMake
       uses: jwlawson/actions-setup-cmake@v2
       with:
-        cmake-version: '3.11'
+        cmake-version: '3.14'
 
     - name: Test all C++ standards
       run: |
@@ -67,6 +67,6 @@ jobs:
           ## Compatibility
           - Supports C++11 through C++23
           - Header-only library
-          - Requires CMake 3.11+
+          - Requires CMake 3.14+
         draft: false
         prerelease: false
